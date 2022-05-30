@@ -407,7 +407,7 @@ class BaseModel:
         # print(stmt.as_string(self._connection.connection))
         return self.execute_get_all(stmt)
 
-    def шdate(self, input_fields, partial=None):
+    def validate(self, input_fields, partial=None):
         """Проверка полей ввода с помощью marshmallow"""
         errors = self.__class__.ValidateSchema().validate(input_fields, partial=partial)
         if errors:
