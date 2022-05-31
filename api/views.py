@@ -4,6 +4,7 @@ from flask_restful import Api, Resource
 from .models import UserModel
 from .schemas import user_schema
 from .db import get_db
+from .api_exceptions import UserNotFoundError
 from . import status
 
 
@@ -15,10 +16,11 @@ class UserResource(Resource):
     def get(self, id):
         user = UserModel(get_db()).select_by_id(id)
         if user is None:
-            return make_response(
-                {'errors': f'User with id={id} not found'},
-                status.HTTP_400_BAD_REQUEST
-            )
+            raise UserNotFoundError()
+            # return make_response(
+            #     {'errors': f'User with id={id} not found'},
+            #     status.HTTP_400_BAD_REQUEST
+            # )
         user = user_schema.dump(user)
         return user
 
