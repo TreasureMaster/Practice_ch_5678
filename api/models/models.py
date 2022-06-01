@@ -45,6 +45,13 @@ class UserModel(BaseModel):
             return {'!error': f'''Пользователь с логином "{input_fields['Login']}" уже существует'''}
         return super().create(**input_fields)
 
+    def is_unique(self, index, login):
+        """Проверка уникальности поля (Login)"""
+        user = self.select_by_field('Login', login)
+        if not user or user[0][self._primary_key] == index:
+            return True
+        return False
+
 
 class MaterialModel(BaseModel):
     """Модель материала здания"""
