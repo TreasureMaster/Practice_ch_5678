@@ -91,17 +91,18 @@ class UserListResource(Resource):
         return user_schema.dump(user_create)
 
 
-class TargetResource(Resource):
+class BaseResource(Resource):
+    """Базовый класс ресурса (get, patch, delete)"""
     def get(self, id):
-        target_model = TargetModel(get_db())
-        if not (target := target_model.select_by_id(id)):
+        model = self._model(get_db())
+        if not (target := model.select_by_id(id)):
             raise NotFoundResourceError(info={'id': id})
 
-        return target_schema.dump(target)
+        return self._schema.dump(target)
 
     def patch(self, id):
-        target_model = TargetModel(get_db())
-        if target_model.select_by_id(id) is None:
+        model = self._model(get_db())
+        if model.select_by_id(id) is None:
             raise NotFoundResourceError()
 
         request_dict = request.get_json()
@@ -109,30 +110,34 @@ class TargetResource(Resource):
             raise NoInputDataError()
 
         try:
-            result = target_schema.load(request_dict, partial=True)
+            result = self._schema.load(request_dict, partial=True)
         except ValidationError as e:
             raise BadRequestResourceError(
                 info={'errors': e.messages, 'valid': e.valid_data}
             )
 
-        if 'target' in request_dict and not target_model.is_unique(id, request_dict['target']):
-            raise NotUniqueDataError(info={'field': 'target'})
+        if (
+            self._unique_key is not None and
+            self._unique_key in request_dict and
+            not model.is_unique(id, request_dict[self._unique_key])
+        ):
+            raise NotUniqueDataError(info={'field': self._unique_key})
 
-        target = target_model.update_by_id(id, **result)
-        return target_schema.dump(target)
+        entry = model.update_by_id(id, **result)
+        return self._schema.dump(entry)
 
     def delete(self, id):
-        target_model = TargetModel(get_db())
-        if target_model.select_by_id(id) is None:
+        model = self._model(get_db())
+        if model.select_by_id(id) is None:
             raise NotFoundResourceError(info={'id': id})
-        target_model.delete(id)
+        model.delete(id)
         return make_response('', status.HTTP_204_NO_CONTENT)
 
 
-class TargetListResource(Resource):
+class BaseListResource(Resource):
     def get(self):
-        targets = TargetModel(get_db()).select_all()
-        return target_schema.dump(targets, many=True)
+        entries = self._model(get_db()).select_all()
+        return self._schema.dump(entries, many=True)
 
     def post(self):
         request_dict = request.get_json()
@@ -140,19 +145,33 @@ class TargetListResource(Resource):
             raise NoInputDataError()
 
         try:
-            result = target_schema.load(request_dict)
+            result = self._schema.load(request_dict)
         except ValidationError as e:
             raise BadRequestResourceError(
                 info={'errors': e.messages, 'valid': e.valid_data}
             )
 
-        target_model = TargetModel(get_db())
-        if 'target' in request_dict and not target_model.is_unique(0, request_dict['target']):
+        model = self._model(get_db())
+        if 'target' in request_dict and not model.is_unique(0, request_dict['target']):
             raise NotUniqueDataError(info={'field': 'target'})
 
-        target_create = target_model.create(**result)
+        entry_create = model.create(**result)
 
-        return target_schema.dump(target_create)
+        return self._schema.dump(entry_create)
+
+
+class BaseTargetConfig:
+    _model = TargetModel
+    _schema = target_schema
+    _unique_key = 'target'
+
+
+class TargetResource(BaseTargetConfig, BaseResource):
+    """."""
+
+
+class TargetListResource(BaseTargetConfig, BaseListResource):
+    """."""
 
 
 api.add_resource(UserListResource, '/users/')
