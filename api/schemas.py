@@ -20,5 +20,15 @@ class UserSchema(Schema):
     class Meta:
         ordered = True
 
-
 user_schema = UserSchema()
+
+
+class TargetSchema(Schema):
+    IDTarget = fields.Integer(dump_only=True, data_key='id')
+    Target = fields.String(
+        required=True,
+        validate=validate.Length(1),
+        data_key='target'
+    )
+
+target_schema = TargetSchema()

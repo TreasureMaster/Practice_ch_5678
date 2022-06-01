@@ -23,15 +23,15 @@ class NotUniqueDataError(BadRequestResourceError):
 class NotFoundResourceError(ApiException):
     status_code = status.HTTP_404_NOT_FOUND
     code = 'not-found'
+    message = 'Field with such id not found'
 
 
-class UserNotFoundError(NotFoundResourceError):
-    message = 'User with such id not found'
+# class UserNotFoundError(NotFoundResourceError):
 
 
 api_exceptions = (
     BadRequestResourceError,
     NoInputDataError,
+    NotFoundResourceError,
     NotUniqueDataError,
-    UserNotFoundError,
 )

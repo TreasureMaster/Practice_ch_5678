@@ -12,6 +12,9 @@ class UserModel(BaseModel):
     _table = 'users'
     _entity_name = 'Пользователь'
     _primary_key = 'IDUser'
+    # NOTE в данной версии предусмотрено всего лишь одно уникальное поле
+    # (для тестирования доп.функций)
+    _unique_field = 'Login'
     _fields = {
         'Login': RequiredField(),
         'Password': RequiredField(),
@@ -45,12 +48,12 @@ class UserModel(BaseModel):
             return {'!error': f'''Пользователь с логином "{input_fields['Login']}" уже существует'''}
         return super().create(**input_fields)
 
-    def is_unique(self, index, login):
-        """Проверка уникальности поля (Login)"""
-        user = self.select_by_field('Login', login)
-        if not user or user[0][self._primary_key] == index:
-            return True
-        return False
+    # def is_unique(self, index, login):
+    #     """Проверка уникальности поля (Login)"""
+    #     user = self.select_by_field('Login', login)
+    #     if not user or user[0][self._primary_key] == index:
+    #         return True
+    #     return False
 
 
 class MaterialModel(BaseModel):
@@ -68,9 +71,13 @@ class TargetModel(BaseModel):
     _table = 'targets'
     _entity_name = 'Тип помещения'
     _primary_key = 'IDTarget'
+    _unique_field = 'Target'
     _fields = {
         'Target': RequiredField(),
     }
+    class ValidateSchema(mm.Schema):
+        """Схема валидации модели."""
+        Target = mm.fields.String(required=True)
 
 
 class DepartmentModel(BaseModel):

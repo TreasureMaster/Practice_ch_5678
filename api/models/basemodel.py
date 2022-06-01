@@ -312,6 +312,13 @@ class BaseModel:
         # print(stmt.as_string(pg))
         return self.execute(stmt, input_fields)
 
+    def is_unique(self, index, field):
+        """Проверка уникальности одного поля"""
+        user = self.select_by_field(self._unique_field, field)
+        if not user or user[0][self._primary_key] == index:
+            return True
+        return False
+
 # ---------------------------- Эти можно оставить ---------------------------- #
     def select_like(self, field, key, order_by=None):
         """Поиск по совпадению поля с частью содержимого поля
