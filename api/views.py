@@ -2,8 +2,13 @@ from flask import Blueprint, request, make_response
 from flask_restful import Api, Resource
 from marshmallow import ValidationError
 
-from .models import UserModel, TargetModel
+from .models import (
+    MaterialModel,
+    TargetModel,
+    UserModel,
+)
 from .schemas import (
+    material_schema,
     target_schema,
     user_schema,
 )
@@ -21,6 +26,7 @@ api_bp = Blueprint('api', __name__)
 api = Api(api_bp)
 
 
+# ------------------ Ресурс User без базовых классов ресурса ----------------- #
 class UserResource(Resource):
     def get(self, id):
         user = UserModel(get_db()).select_by_id(id)
@@ -91,6 +97,7 @@ class UserListResource(Resource):
         return user_schema.dump(user_create)
 
 
+# -------------------------- Базовые классы ресурса -------------------------- #
 class BaseResource(Resource):
     """Базовый класс ресурса (get, patch, delete)"""
     def get(self, id):
@@ -135,6 +142,7 @@ class BaseResource(Resource):
 
 
 class BaseListResource(Resource):
+    """Базовый класс ресурса для списка (get, post)"""
     def get(self):
         entries = self._model(get_db()).select_all()
         return self._schema.dump(entries, many=True)
@@ -152,29 +160,51 @@ class BaseListResource(Resource):
             )
 
         model = self._model(get_db())
-        if 'target' in request_dict and not model.is_unique(0, request_dict['target']):
-            raise NotUniqueDataError(info={'field': 'target'})
+        if (
+            self._unique_key is not None and
+            self._unique_key in request_dict and
+            not model.is_unique(id, request_dict[self._unique_key])
+        ):
+            raise NotUniqueDataError(info={'field': self._unique_key})
 
         entry_create = model.create(**result)
 
         return self._schema.dump(entry_create)
 
 
-class BaseTargetConfig:
+# ---------------------- Инициализация целевых ресурсов ---------------------- #
+class TargetBaseConfig:
     _model = TargetModel
     _schema = target_schema
     _unique_key = 'target'
 
 
-class TargetResource(BaseTargetConfig, BaseResource):
+class TargetResource(TargetBaseConfig, BaseResource):
     """."""
 
 
-class TargetListResource(BaseTargetConfig, BaseListResource):
+class TargetListResource(TargetBaseConfig, BaseListResource):
     """."""
 
 
+class MaterialBaseConfig:
+    _model = MaterialModel
+    _schema = material_schema
+    _unique_key = 'material'
+
+
+class MaterialResource(MaterialBaseConfig, BaseResource):
+    """."""
+
+
+class MaterialListResource(MaterialBaseConfig, BaseListResource):
+    """."""
+
+
+# --------------------------------- Маршруты --------------------------------- #
 api.add_resource(UserListResource, '/users/')
 api.add_resource(UserResource, '/users/<int:id>')
 api.add_resource(TargetListResource, '/targets/')
 api.add_resource(TargetResource, '/targets/<int:id>')
+api.add_resource(MaterialListResource, '/materials/')
+api.add_resource(MaterialResource, '/materials/<int:id>')

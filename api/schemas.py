@@ -20,8 +20,6 @@ class UserSchema(Schema):
     class Meta:
         ordered = True
 
-user_schema = UserSchema()
-
 
 class TargetSchema(Schema):
     IDTarget = fields.Integer(dump_only=True, data_key='id')
@@ -31,4 +29,22 @@ class TargetSchema(Schema):
         data_key='target'
     )
 
+    class Meta:
+        ordered = True
+
+
+class MaterialSchema(Schema):
+    IDMaterial = fields.Integer(dump_only=True, data_key='id')
+    Material = fields.String(
+        required=True,
+        validate=validate.Length(1),
+        data_key='material'
+    )
+
+    class Meta:
+        ordered = True
+
+
+user_schema = UserSchema()
 target_schema = TargetSchema()
+material_schema = MaterialSchema()

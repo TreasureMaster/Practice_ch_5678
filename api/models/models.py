@@ -61,9 +61,13 @@ class MaterialModel(BaseModel):
     _table = 'materials'
     _entity_name = 'Материал'
     _primary_key = 'IDMaterial'
+    _unique_field = 'Material'
     _fields = {
         'Material': RequiredField(),
     }
+    class ValidateSchema(mm.Schema):
+        """Схема валидации модели."""
+        Material = mm.fields.String(required=True)
 
 
 class TargetModel(BaseModel):
