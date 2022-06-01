@@ -45,6 +45,33 @@ class MaterialSchema(Schema):
         ordered = True
 
 
+class DepartmentSchema(Schema):
+    IDDepartment = fields.Integer(dump_only=True, data_key='id')
+    DepartmentName = fields.String(
+        required=True,
+        validate=validate.Length(1),
+        data_key='department',
+    )
+    Boss = fields.String(
+        required=True,
+        validate=validate.Length(3),
+        data_key='boss',
+    )
+    Phone = fields.Integer(
+        required=True,
+        data_key='phone',
+    )
+    OfficeDean = fields.String(
+        required=True,
+        validate=validate.Length(1),
+        data_key='dienery',
+    )
+
+    class Meta:
+        ordered = True
+
+
 user_schema = UserSchema()
 target_schema = TargetSchema()
 material_schema = MaterialSchema()
+department_schema = DepartmentSchema()

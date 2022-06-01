@@ -3,11 +3,13 @@ from flask_restful import Api, Resource
 from marshmallow import ValidationError
 
 from .models import (
+    DepartmentModel,
     MaterialModel,
     TargetModel,
     UserModel,
 )
 from .schemas import (
+    department_schema,
     material_schema,
     target_schema,
     user_schema,
@@ -201,6 +203,21 @@ class MaterialListResource(MaterialBaseConfig, BaseListResource):
     """."""
 
 
+class DepartmentBaseConfig:
+    _model = DepartmentModel
+    _schema = department_schema
+    # None нужно делать, чтобы не путаться с уникальными полями
+    _unique_key = None
+
+
+class DepartmentResource(DepartmentBaseConfig, BaseResource):
+    """."""
+
+
+class DepartmentListResource(DepartmentBaseConfig, BaseListResource):
+    """."""
+
+
 # --------------------------------- Маршруты --------------------------------- #
 api.add_resource(UserListResource, '/users/')
 api.add_resource(UserResource, '/users/<int:id>')
@@ -208,3 +225,5 @@ api.add_resource(TargetListResource, '/targets/')
 api.add_resource(TargetResource, '/targets/<int:id>')
 api.add_resource(MaterialListResource, '/materials/')
 api.add_resource(MaterialResource, '/materials/<int:id>')
+api.add_resource(DepartmentListResource, '/departments/')
+api.add_resource(DepartmentResource, '/departments/<int:id>')
