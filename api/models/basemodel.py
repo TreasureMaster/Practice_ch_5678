@@ -203,6 +203,9 @@ class BaseModel:
         # Только проверка существования id из другой таблицы
         for key, entity in self._fields.items():
             if isinstance(entity, backref):
+                # NOTE правка для веб-версии
+                if key not in kwargs:
+                    continue
                 # проверить, есть ли backref с таким id
                 row = entity.check_id(kwargs[key])
                 if not row:

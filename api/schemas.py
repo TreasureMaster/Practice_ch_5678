@@ -130,8 +130,73 @@ class BuildingSchema(Schema):
     class Meta:
         ordered = True
 
+
+class HallSchema(Schema):
+    IDHall = fields.Integer(dump_only=True, data_key='id')
+    HallNumber = fields.Integer(
+        required=True,
+        validate=validate.Range(min=0),
+        data_key='number',
+    )
+    HallSquare = fields.Float(
+        required=True,
+        validate=validate.Range(min=0.0),
+        data_key='square',
+    )
+    Windows = fields.Integer(
+        required=True,
+        validate=validate.Range(min=0),
+        data_key='windows',
+    )
+    Heaters = fields.Integer(
+        required=True,
+        validate=validate.Range(min=0),
+        data_key='heaters',
+    )
+    TargetID = fields.Integer(
+        required=True,
+        validate=validate.Range(min=1),
+        data_key='target_id',
+    )
+    Target = fields.String(
+        required=True,
+        dump_only=True,
+        data_key='target',
+    )
+    DepartmentID = fields.Integer(
+        required=True,
+        validate=validate.Range(min=1),
+        data_key='department_id',
+        # attribute='IDDepartment',
+    )
+    DepartmentName = fields.String(
+        required=True,
+        dump_only=True,
+        data_key='department',
+    )
+    KadastrID = fields.Integer(
+        required=True,
+        validate=validate.Range(min=1),
+        data_key='building_id',
+    )
+    BuildingName = fields.String(
+        required=True,
+        dump_only=True,
+        data_key='building',
+    )
+    HallName = fields.String(
+        required=True,
+        dump_only=True,
+        data_key='hall',
+    )
+
+    class Meta:
+        ordered = True
+
+
 user_schema = UserSchema()
 target_schema = TargetSchema()
 material_schema = MaterialSchema()
 department_schema = DepartmentSchema()
 building_schema = BuildingSchema()
+hall_schema = HallSchema()
