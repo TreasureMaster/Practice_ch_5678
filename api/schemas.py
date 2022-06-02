@@ -216,6 +216,66 @@ class ChiefSchema(Schema):
         ordered = True
 
 
+class UnitSchema(Schema):
+    IDUnit = fields.Integer(dump_only=True, data_key='id')
+    UnitName = fields.String(
+        required=True,
+        validate=validate.Length(1),
+        data_key='unit',
+    )
+    DateStart = fields.Date(
+        required=True,
+        # validate=validate.Length(3),
+        data_key='date_start',
+    )
+    Cost = fields.Float(
+        required=True,
+        validate=validate.Range(min=0),
+        data_key='cost'
+    )
+    CostYear = fields.Integer(
+        required=True,
+        validate=validate.Range(
+            min=1600,
+            max=dt.date.today().year,
+        ),
+        data_key='cost_year'
+    )
+    CostAfter = fields.Float(
+        required=True,
+        validate=validate.Range(min=0),
+        data_key='cost_after'
+    )
+    Period = fields.Integer(
+        required=True,
+        validate=validate.Range(min=0),
+        data_key='period'
+    )
+    ChiefID = fields.Integer(
+        required=True,
+        validate=validate.Range(min=1),
+        data_key='chief_id',
+    )
+    Chief = fields.String(
+        required=True,
+        dump_only=True,
+        data_key='chief',
+    )
+    HallID = fields.Integer(
+        required=True,
+        validate=validate.Range(min=1),
+        data_key='hall_id',
+    )
+    HallName = fields.String(
+        required=True,
+        dump_only=True,
+        data_key='hall',
+    )
+
+    class Meta:
+        ordered = True
+
+
 user_schema = UserSchema()
 target_schema = TargetSchema()
 material_schema = MaterialSchema()
@@ -223,3 +283,4 @@ department_schema = DepartmentSchema()
 building_schema = BuildingSchema()
 hall_schema = HallSchema()
 chief_schema = ChiefSchema()
+unit_schema = UnitSchema()

@@ -9,6 +9,7 @@ from .models import (
     HallModel,
     MaterialModel,
     TargetModel,
+    UnitModel,
     UserModel,
 )
 from .schemas import (
@@ -18,6 +19,7 @@ from .schemas import (
     hall_schema,
     material_schema,
     target_schema,
+    unit_schema,
     user_schema,
 )
 from .db import get_db
@@ -273,6 +275,21 @@ class ChiefListResource(ChiefBaseConfig, BaseListResource):
     """."""
 
 
+class UnitBaseConfig:
+    _model = UnitModel
+    _schema = unit_schema
+    # None нужно делать, чтобы не путаться с уникальными полями
+    _unique_key = None
+
+
+class UnitResource(UnitBaseConfig, BaseResource):
+    """."""
+
+
+class UnitListResource(UnitBaseConfig, BaseListResource):
+    """."""
+
+
 # --------------------------------- Маршруты --------------------------------- #
 api.add_resource(UserListResource, '/users/')
 api.add_resource(UserResource, '/users/<int:id>')
@@ -288,3 +305,5 @@ api.add_resource(HallListResource, '/halls/')
 api.add_resource(HallResource, '/halls/<int:id>')
 api.add_resource(ChiefListResource, '/chiefs/')
 api.add_resource(ChiefResource, '/chiefs/<int:id>')
+api.add_resource(UnitListResource, '/units/')
+api.add_resource(UnitResource, '/units/<int:id>')
