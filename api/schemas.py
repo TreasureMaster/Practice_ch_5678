@@ -194,9 +194,32 @@ class HallSchema(Schema):
         ordered = True
 
 
+class ChiefSchema(Schema):
+    IDChief = fields.Integer(dump_only=True, data_key='id')
+    Chief = fields.String(
+        required=True,
+        validate=validate.Length(1),
+        data_key='chief',
+    )
+    AddressChief = fields.String(
+        required=True,
+        validate=validate.Length(3),
+        data_key='address_chief',
+    )
+    Experience = fields.Integer(
+        required=True,
+        validate=validate.Range(min=0),
+        data_key='experience'
+    )
+
+    class Meta:
+        ordered = True
+
+
 user_schema = UserSchema()
 target_schema = TargetSchema()
 material_schema = MaterialSchema()
 department_schema = DepartmentSchema()
 building_schema = BuildingSchema()
 hall_schema = HallSchema()
+chief_schema = ChiefSchema()

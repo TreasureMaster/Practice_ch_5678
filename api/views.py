@@ -4,6 +4,7 @@ from marshmallow import ValidationError
 
 from .models import (
     BuildingModel,
+    ChiefModel,
     DepartmentModel,
     HallModel,
     MaterialModel,
@@ -12,6 +13,7 @@ from .models import (
 )
 from .schemas import (
     building_schema,
+    chief_schema,
     department_schema,
     hall_schema,
     material_schema,
@@ -256,6 +258,21 @@ class HallListResource(HallBaseConfig, BaseListResource):
     """."""
 
 
+class ChiefBaseConfig:
+    _model = ChiefModel
+    _schema = chief_schema
+    # None нужно делать, чтобы не путаться с уникальными полями
+    _unique_key = None
+
+
+class ChiefResource(ChiefBaseConfig, BaseResource):
+    """."""
+
+
+class ChiefListResource(ChiefBaseConfig, BaseListResource):
+    """."""
+
+
 # --------------------------------- Маршруты --------------------------------- #
 api.add_resource(UserListResource, '/users/')
 api.add_resource(UserResource, '/users/<int:id>')
@@ -269,3 +286,5 @@ api.add_resource(BuildingListResource, '/buildings/')
 api.add_resource(BuildingResource, '/buildings/<int:id>')
 api.add_resource(HallListResource, '/halls/')
 api.add_resource(HallResource, '/halls/<int:id>')
+api.add_resource(ChiefListResource, '/chiefs/')
+api.add_resource(ChiefResource, '/chiefs/<int:id>')
