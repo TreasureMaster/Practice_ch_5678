@@ -1,3 +1,4 @@
+import datetime as dt
 from marshmallow import Schema, fields, validate
 
 
@@ -71,7 +72,66 @@ class DepartmentSchema(Schema):
         ordered = True
 
 
+class BuildingSchema(Schema):
+    IDKadastr = fields.Integer(dump_only=True, data_key='id')
+    BuildingName = fields.String(
+        required=True,
+        validate=validate.Length(1),
+        data_key='building',
+    )
+    Land = fields.Float(
+        required=True,
+        validate=validate.Range(min=0.0),
+        data_key='land',
+    )
+    Address = fields.String(
+        required=True,
+        validate=validate.Length(1),
+        data_key='address',
+    )
+    Year = fields.Integer(
+        required=True,
+        validate=validate.Range(
+            min=1600,
+            max=dt.date.today().year,
+        ),
+        data_key='year',
+    )
+    Wear = fields.Integer(
+        required=True,
+        validate=validate.Range(min=0, max=100),
+        data_key='wear',
+    )
+    Flow = fields.Integer(
+        required=True,
+        validate=validate.Range(min=1, max=100),
+        data_key='flow',
+    )
+    Picture = fields.String(allow_none=True, load_default=None)
+    Comment = fields.String(allow_none=True, load_default=None)
+    # MaterialID = fields.Nested(
+    #     MaterialSchema(only=('Material',)),
+    #     required=True,
+    #     # only=('Material',)
+    #     data_key='material',
+    # )
+    # Эта схема работы только для своей ОРМ; для SQLAlchemy нужно будет переделать
+    MaterialID = fields.Integer(
+        required=True,
+        validate=validate.Range(min=1),
+        data_key='material_id',
+    )
+    Material = fields.String(
+        required=True,
+        dump_only=True,
+        data_key='material',
+    )
+
+    class Meta:
+        ordered = True
+
 user_schema = UserSchema()
 target_schema = TargetSchema()
 material_schema = MaterialSchema()
 department_schema = DepartmentSchema()
+building_schema = BuildingSchema()

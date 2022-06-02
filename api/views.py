@@ -1,14 +1,16 @@
-from flask import Blueprint, request, make_response
+from flask import Blueprint, request, make_response, current_app
 from flask_restful import Api, Resource
 from marshmallow import ValidationError
 
 from .models import (
+    BuildingModel,
     DepartmentModel,
     MaterialModel,
     TargetModel,
     UserModel,
 )
 from .schemas import (
+    building_schema,
     department_schema,
     material_schema,
     target_schema,
@@ -107,7 +109,10 @@ class BaseResource(Resource):
         if not (target := model.select_by_id(id)):
             raise NotFoundResourceError(info={'id': id})
 
-        return self._schema.dump(target)
+        print(target)
+        a = self._schema.dump(target)
+        print(a)
+        return a
 
     def patch(self, id):
         model = self._model(get_db())
@@ -133,6 +138,7 @@ class BaseResource(Resource):
             raise NotUniqueDataError(info={'field': self._unique_key})
 
         entry = model.update_by_id(id, **result)
+        # FIXME с этим пока ошибка, так как возвращает неполные данные (исправить с SQLALchemy)
         return self._schema.dump(entry)
 
     def delete(self, id):
@@ -170,7 +176,7 @@ class BaseListResource(Resource):
             raise NotUniqueDataError(info={'field': self._unique_key})
 
         entry_create = model.create(**result)
-
+        # FIXME с этим пока ошибка, так как возвращает неполные данные (исправить с SQLALchemy)
         return self._schema.dump(entry_create)
 
 
@@ -218,6 +224,21 @@ class DepartmentListResource(DepartmentBaseConfig, BaseListResource):
     """."""
 
 
+class BuildingBaseConfig:
+    _model = BuildingModel
+    _schema = building_schema
+    # None нужно делать, чтобы не путаться с уникальными полями
+    _unique_key = None
+
+
+class BuildingResource(BuildingBaseConfig, BaseResource):
+    """."""
+
+
+class BuildingListResource(BuildingBaseConfig, BaseListResource):
+    """."""
+
+
 # --------------------------------- Маршруты --------------------------------- #
 api.add_resource(UserListResource, '/users/')
 api.add_resource(UserResource, '/users/<int:id>')
@@ -227,3 +248,5 @@ api.add_resource(MaterialListResource, '/materials/')
 api.add_resource(MaterialResource, '/materials/<int:id>')
 api.add_resource(DepartmentListResource, '/departments/')
 api.add_resource(DepartmentResource, '/departments/<int:id>')
+api.add_resource(BuildingListResource, '/buildings/')
+api.add_resource(BuildingResource, '/buildings/<int:id>')
