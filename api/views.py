@@ -1,5 +1,6 @@
-from flask import Blueprint, request, make_response, current_app
+from flask import Blueprint, request, make_response, g, current_app
 from flask_restful import Api, Resource
+from flask_httpauth import HTTPBasicAuth
 from marshmallow import ValidationError
 
 from .models import (
@@ -32,93 +33,120 @@ from .api_exceptions import (
 from . import status
 
 
+auth = HTTPBasicAuth()
+
+@auth.get_user_roles
+def get_user_roles(user):
+    # NOTE : user - это werkzeug.dataclasses.Authorization
+    user = UserModel(get_db()).select_by_field('Login', user.username)
+    if user:
+        return 'admin' if user[0]['is_admin'] else 'user'
+    # NOTE если возвращает None, то будет отработан 403 FORBIDDEN
+
+@auth.verify_password
+def check_user_password(username, password):
+    if '!error' in UserModel(get_db()).sign_in(username, password):
+        return False
+    return True
+
+
 api_bp = Blueprint('api', __name__)
 api = Api(api_bp)
 
+class AdminAuthRequired:
+    """Добавляет аутентификацию администратора admin (как конфиг)"""
+    method_decorators = [auth.login_required(role='admin')]
+
+
+class UserAuthRequiredResource(Resource):
+    """Добавляет аутентификацию пользователя user (как ресурс)"""
+    method_decorators = [auth.login_required(role='user')]
 
 # ------------------ Ресурс User без базовых классов ресурса ----------------- #
-class UserResource(Resource):
-    def get(self, id):
-        user = UserModel(get_db()).select_by_id(id)
-        if user is None:
-            raise NotFoundResourceError()
-            # return make_response(
-            #     {'errors': f'User with id={id} not found'},
-            #     status.HTTP_400_BAD_REQUEST
-            # )
-        user = user_schema.dump(user)
-        return user
+# class UserResource(Resource):
+#     def get(self, id):
+#         user = UserModel(get_db()).select_by_id(id)
+#         if user is None:
+#             raise NotFoundResourceError()
+#             # return make_response(
+#             #     {'errors': f'User with id={id} not found'},
+#             #     status.HTTP_400_BAD_REQUEST
+#             # )
+#         user = user_schema.dump(user)
+#         return user
 
-    def patch(self, id):
-        user_model = UserModel(get_db())
-        if user_model.select_by_id(id) is None:
-            raise NotFoundResourceError()
+#     def patch(self, id):
+#         user_model = UserModel(get_db())
+#         if user_model.select_by_id(id) is None:
+#             raise NotFoundResourceError()
 
-        request_dict = request.get_json()
-        if not request_dict:
-            raise NoInputDataError()
+#         request_dict = request.get_json()
+#         if not request_dict:
+#             raise NoInputDataError()
 
-        try:
-            result = user_schema.load(request_dict, partial=True)
-        except ValidationError as e:
-            raise BadRequestResourceError(
-                info={'errors': e.messages, 'valid': e.valid_data}
-            )
+#         try:
+#             result = user_schema.load(request_dict, partial=True)
+#         except ValidationError as e:
+#             raise BadRequestResourceError(
+#                 info={'errors': e.messages, 'valid': e.valid_data}
+#             )
 
-        if 'login' in request_dict and not user_model.is_unique(id, request_dict['login']):
-            raise NotUniqueDataError(info={'field': 'login'})
+#         if 'login' in request_dict and not user_model.is_unique(id, request_dict['login']):
+#             raise NotUniqueDataError(info={'field': 'login'})
 
-        user = user_model.update_by_id(id, **result)
-        return user_schema.dump(user)
+#         user = user_model.update_by_id(id, **result)
+#         return user_schema.dump(user)
 
-    def delete(self, id):
-        user_model = UserModel(get_db())
-        if user_model.select_by_id(id) is None:
-            raise NotFoundResourceError()
-        user_model.delete(id)
-        return make_response('', status.HTTP_204_NO_CONTENT)
+#     def delete(self, id):
+#         user_model = UserModel(get_db())
+#         if user_model.select_by_id(id) is None:
+#             raise NotFoundResourceError()
+#         user_model.delete(id)
+#         return make_response('', status.HTTP_204_NO_CONTENT)
 
 
-class UserListResource(Resource):
-    def get(self):
-        users = UserModel(get_db()).select_all()
-        users = user_schema.dump(users, many=True)
-        return users
+# class UserListResource(Resource):
+#     def get(self):
+#         users = UserModel(get_db()).select_all()
+#         users = user_schema.dump(users, many=True)
+#         return users
 
-    def post(self):
-        request_dict = request.get_json()
-        if not request_dict:
-            raise NoInputDataError()
-            # resp = {'message': 'No input data provided'}
-            # return resp, status.HTTP_400_BAD_REQUEST
+#     def post(self):
+#         request_dict = request.get_json()
+#         if not request_dict:
+#             raise NoInputDataError()
+#             # resp = {'message': 'No input data provided'}
+#             # return resp, status.HTTP_400_BAD_REQUEST
 
-        errors = user_schema.validate(request_dict)
-        if errors:
-            raise BadRequestResourceError(info=errors)
-            # return errors, status.HTTP_400_BAD_REQUEST
+#         errors = user_schema.validate(request_dict)
+#         if errors:
+#             raise BadRequestResourceError(info=errors)
+#             # return errors, status.HTTP_400_BAD_REQUEST
 
-        user_create = UserModel(get_db()).create(
-            **user_schema.load(request_dict)
-        )
+#         user_create = UserModel(get_db()).create(
+#             **user_schema.load(request_dict)
+#         )
 
-        if '!error' in user_create:
-            raise BadRequestResourceError(info={'login': user_create['!error']})
+#         if '!error' in user_create:
+#             raise BadRequestResourceError(info={'login': user_create['!error']})
 
-        return user_schema.dump(user_create)
+#         return user_schema.dump(user_create)
 
 
 # -------------------------- Базовые классы ресурса -------------------------- #
-class BaseResource(Resource):
+class BaseResource(UserAuthRequiredResource):
     """Базовый класс ресурса (get, patch, delete)"""
+    # method_decorators = [auth.login_required(role='user')]
+
     def get(self, id):
         model = self._model(get_db())
         if not (target := model.select_by_id(id)):
             raise NotFoundResourceError(info={'id': id})
 
-        print(target)
-        a = self._schema.dump(target)
-        print(a)
-        return a
+        # print(target)
+        return self._schema.dump(target)
+        # print(a)
+        # return a
 
     def patch(self, id):
         model = self._model(get_db())
@@ -155,8 +183,10 @@ class BaseResource(Resource):
         return make_response('', status.HTTP_204_NO_CONTENT)
 
 
-class BaseListResource(Resource):
+class BaseListResource(UserAuthRequiredResource):
     """Базовый класс ресурса для списка (get, post)"""
+    # method_decorators = [auth.login_required(role='user')]
+
     def get(self):
         entries = self._model(get_db()).select_all()
         return self._schema.dump(entries, many=True)
@@ -187,6 +217,22 @@ class BaseListResource(Resource):
 
 
 # ---------------------- Инициализация целевых ресурсов ---------------------- #
+class UserBaseConfig(AdminAuthRequired):
+    _model = UserModel
+    _schema = user_schema
+    _unique_key = 'login'
+    # method_decorators = [auth.login_required(role='admin')]
+
+
+class UserResource(UserBaseConfig, BaseResource):
+    """."""
+    # method_decorators = [auth.login_required(role='admin')]
+
+
+class UserListResource(UserBaseConfig, BaseListResource):
+    """."""
+
+
 class TargetBaseConfig:
     _model = TargetModel
     _schema = target_schema

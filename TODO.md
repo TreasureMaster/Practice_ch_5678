@@ -55,7 +55,7 @@
 
 ### Задачи практики
 
-[ ] Объединить Flask-RESTful и самописную ОРМ
+[x] Объединить Flask-RESTful и самописную ОРМ
 [ ] Заменить самописную ОРМ на SQLAlchemy
 [ ] Объединить все компоненты с marshmallow
 [ ] Упростить (автоматическая интеграция Flask-marshmallow и marshmallow-sqlalchemy)
