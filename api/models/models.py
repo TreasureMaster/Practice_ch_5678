@@ -150,7 +150,7 @@ class Target(db.Model, AddUpdateDelete):
     __tablename__ = 'targets'
 
     IDTarget = db.Column(db.Integer, primary_key=True)
-    Target = db.Column(db.String(60ш), nullable=False, unique=True)
+    Target = db.Column(db.String(60), nullable=False, unique=True)
     # Target = db.Column(db.String(60, collation='NOCASE'), nullable=False, unique=True)
     # _table = 'targets'
     # _entity_name = 'Тип помещения'
