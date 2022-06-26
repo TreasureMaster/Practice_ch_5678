@@ -136,7 +136,7 @@ ALTER TABLE public.units
 CREATE TABLE public.users(
     "IDUser" serial PRIMARY KEY NOT NULL,
     "Login" VARCHAR(32) UNIQUE NOT NULL,
-    "Password" VARCHAR(40) NOT NULL,
+    "Password" VARCHAR(255) NOT NULL,
     "is_admin" boolean NOT NULL
 );
 

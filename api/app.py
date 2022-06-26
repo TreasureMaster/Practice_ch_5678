@@ -17,6 +17,10 @@ def create_app(config_filename):
         for exc in api_exceptions
     ]
 
+    # from .models.models import db
+    from .models import db
+    db.init_app(app)
+
     # from .db import get_db
     # with app.app_context():
     #     get_db()

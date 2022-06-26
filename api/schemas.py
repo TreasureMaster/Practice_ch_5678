@@ -1,25 +1,55 @@
 import datetime as dt
-from marshmallow import Schema, fields, validate
+from marshmallow import Schema, fields, validate, post_load
+from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
+
+from .models import User, db
 
 
-class UserSchema(Schema):
-    IDUser = fields.Integer(dump_only=True, data_key='id')
-    Login = fields.String(
+# class BaseSchema(Schema):
+#     __model__ = None
+
+#     class Meta:
+#         ordered = True
+
+#     @post_load
+#     def make_entity(self, data, **kwargs):
+#         if self.__model__ is None:
+#             return data
+#         return self.__model__(**data)
+
+class BaseSchema(SQLAlchemySchema):
+    class Meta:
+        sqla_session = db.session
+        load_instance = True
+        ordered = True
+
+    @post_load
+    def make_instance(self, data, **kwargs):
+        # аргумент raw_dict_return используется разово
+        if self.context.pop('raw_dict_return', None):
+            return data
+        return super().make_instance(data, **kwargs).encrypting()
+
+
+class UserSchema(BaseSchema):
+    class Meta(BaseSchema.Meta):
+        model = User
+
+    IDUser = auto_field(dump_only=True, data_key='id')
+    Login = auto_field(
         required=True,
-        validate=validate.Length(3),
-        data_key='login'
+        validate=validate.Length(min=3, max=32),
+        data_key='login',
     )
-    Password = fields.String(
+    Password = auto_field(
         required=True,
-        validate=validate.Length(min=4, max=32),
+        validate=validate.Length(min=4, max=40),
         load_only=True,
         data_key='password'
     )
-    is_admin = fields.Boolean(required=True, data_key='admin')
-    # url = 
+    is_admin = auto_field(required=True, data_key='admin')
 
-    class Meta:
-        ordered = True
+    # url = 
 
 
 class TargetSchema(Schema):
@@ -284,3 +314,14 @@ building_schema = BuildingSchema()
 hall_schema = HallSchema()
 chief_schema = ChiefSchema()
 unit_schema = UnitSchema()
+
+json_schemas = {
+    'user': UserSchema(),
+    'target': TargetSchema(),
+    'material': MaterialSchema(),
+    'department': DepartmentSchema(),
+    'building': BuildingSchema(),
+    'hall': HallSchema(),
+    'chief': ChiefSchema(),
+    'unit': UnitSchema(),
+}

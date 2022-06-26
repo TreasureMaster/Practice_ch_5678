@@ -1,17 +1,19 @@
-from flask import Blueprint, request, make_response, g, current_app
+from flask import Blueprint, request, make_response, g, current_app, jsonify
 from flask_restful import Api, Resource
 from flask_httpauth import HTTPBasicAuth
-from marshmallow import ValidationError
+from marshmallow import ValidationError, INCLUDE
+from sqlalchemy.exc import SQLAlchemyError
 
 from .models import (
-    BuildingModel,
-    ChiefModel,
-    DepartmentModel,
-    HallModel,
-    MaterialModel,
-    TargetModel,
-    UnitModel,
-    UserModel,
+    db,
+    Building,
+    # ChiefModel,
+    Department,
+    # HallModel,
+    Material,
+    Target,
+    # UnitModel,
+    User,
 )
 from .schemas import (
     building_schema,
@@ -23,7 +25,7 @@ from .schemas import (
     unit_schema,
     user_schema,
 )
-from .db import get_db
+# from .db import get_db
 from .api_exceptions import (
     BadRequestResourceError,
     NoInputDataError,
@@ -33,21 +35,21 @@ from .api_exceptions import (
 from . import status
 
 
-auth = HTTPBasicAuth()
+# auth = HTTPBasicAuth()
 
-@auth.get_user_roles
-def get_user_roles(user):
-    # NOTE : user - это werkzeug.dataclasses.Authorization
-    user = UserModel(get_db()).select_by_field('Login', user.username)
-    if user:
-        return 'admin' if user[0]['is_admin'] else 'user'
-    # NOTE если возвращает None, то будет отработан 403 FORBIDDEN
+# @auth.get_user_roles
+# def get_user_roles(user):
+#     # NOTE : user - это werkzeug.dataclasses.Authorization
+#     user = User(get_db()).select_by_field('Login', user.username)
+#     if user:
+#         return 'admin' if user[0]['is_admin'] else 'user'
+#     # NOTE если возвращает None, то будет отработан 403 FORBIDDEN
 
-@auth.verify_password
-def check_user_password(username, password):
-    if '!error' in UserModel(get_db()).sign_in(username, password):
-        return False
-    return True
+# @auth.verify_password
+# def check_user_password(username, password):
+#     if '!error' in UserModel(get_db()).sign_in(username, password):
+#         return False
+#     return True
 
 
 api_bp = Blueprint('api', __name__)
@@ -55,12 +57,12 @@ api = Api(api_bp)
 
 class AdminAuthRequired:
     """Добавляет аутентификацию администратора admin (как конфиг)"""
-    method_decorators = [auth.login_required(role='admin')]
+    # method_decorators = [auth.login_required(role='admin')]
 
 
 class UserAuthRequiredResource(Resource):
     """Добавляет аутентификацию пользователя user (как ресурс)"""
-    method_decorators = [auth.login_required(role='user')]
+    # method_decorators = [auth.login_required(role='user')]
 
 # ------------------ Ресурс User без базовых классов ресурса ----------------- #
 # class UserResource(Resource):
@@ -139,56 +141,66 @@ class BaseResource(UserAuthRequiredResource):
     # method_decorators = [auth.login_required(role='user')]
 
     def get(self, id):
-        model = self._model(get_db())
-        if not (target := model.select_by_id(id)):
-            raise NotFoundResourceError(info={'id': id})
-
-        # print(target)
-        return self._schema.dump(target)
-        # print(a)
-        # return a
+        entry = self._model.query.get_or_404(id)
+        return self._schema.dump(entry)
 
     def patch(self, id):
-        model = self._model(get_db())
-        if model.select_by_id(id) is None:
-            raise NotFoundResourceError()
+        entry = self._model.query.get_or_404(id)
 
         request_dict = request.get_json()
         if not request_dict:
             raise NoInputDataError()
 
+        # NOTE здесь и валидируем данные, и проверяем уникальность
         try:
-            result = self._schema.load(request_dict, partial=True)
+            self._schema.context['raw_dict_return'] = True
+            is_unique, error_fields = self._model.check_unique(
+                request_dict := self._schema.load(request_dict, partial=True), id
+            )
         except ValidationError as e:
             raise BadRequestResourceError(
                 info={'errors': e.messages, 'valid': e.valid_data}
             )
+        else:
+            if not is_unique:
+                raise NotUniqueDataError(info={'fields': error_fields})
 
-        if (
-            self._unique_key is not None and
-            self._unique_key in request_dict and
-            not model.is_unique(id, request_dict[self._unique_key])
-        ):
-            raise NotUniqueDataError(info={'field': self._unique_key})
-
-        entry = model.update_by_id(id, **result)
-        # FIXME с этим пока ошибка, так как возвращает неполные данные (исправить с SQLALchemy)
-        return self._schema.dump(entry)
+        try:
+            entry.update(request_dict)
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            return make_response(
+                jsonify({'error': str(e)}),
+                status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        else:
+            return make_response(
+                self._schema.dump(entry),
+                status.HTTP_200_OK
+            )
 
     def delete(self, id):
-        model = self._model(get_db())
-        if model.select_by_id(id) is None:
-            raise NotFoundResourceError(info={'id': id})
-        model.delete(id)
-        return make_response('', status.HTTP_204_NO_CONTENT)
+        entity = self._model.query.get_or_404(id)
+        try:
+            entity.delete()
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            return make_response(
+                jsonify({'error': str(e)}),
+                status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        else:
+            return make_response(
+                '',
+                status.HTTP_204_NO_CONTENT
+            )
 
 
 class BaseListResource(UserAuthRequiredResource):
     """Базовый класс ресурса для списка (get, post)"""
-    # method_decorators = [auth.login_required(role='user')]
 
     def get(self):
-        entries = self._model(get_db()).select_all()
+        entries = self._model.query.all()
         return self._schema.dump(entries, many=True)
 
     def post(self):
@@ -196,31 +208,42 @@ class BaseListResource(UserAuthRequiredResource):
         if not request_dict:
             raise NoInputDataError()
 
+        # NOTE здесь и валидируем данные, и проверяем уникальность
         try:
-            result = self._schema.load(request_dict)
+            self._schema.context['raw_dict_return'] = True
+            is_unique, error_fields = self._model.check_unique(
+                self._schema.load(request_dict)
+            )
         except ValidationError as e:
             raise BadRequestResourceError(
                 info={'errors': e.messages, 'valid': e.valid_data}
             )
+        else:
+            if not is_unique:
+                raise NotUniqueDataError(info={'fields': error_fields})
+            # Теперь нужно загрузить сам объект (без контекста схемы), а не его словарь
+            new_entry = self._schema.load(request_dict)
 
-        model = self._model(get_db())
-        if (
-            self._unique_key is not None and
-            self._unique_key in request_dict and
-            not model.is_unique(id, request_dict[self._unique_key])
-        ):
-            raise NotUniqueDataError(info={'field': self._unique_key})
-
-        entry_create = model.create(**result)
-        # FIXME с этим пока ошибка, так как возвращает неполные данные (исправить с SQLALchemy)
-        return self._schema.dump(entry_create)
+        try:
+            new_entry.add()
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            return make_response(
+                jsonify({'error': str(e)}),
+                status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        else:
+            return make_response(
+                self._schema.dump(new_entry),
+                status.HTTP_201_CREATED
+            )
 
 
 # ---------------------- Инициализация целевых ресурсов ---------------------- #
 class UserBaseConfig(AdminAuthRequired):
-    _model = UserModel
+    _model = User
     _schema = user_schema
-    _unique_key = 'login'
+    # _unique_key = 'login'
     # method_decorators = [auth.login_required(role='admin')]
 
 
@@ -233,123 +256,123 @@ class UserListResource(UserBaseConfig, BaseListResource):
     """."""
 
 
-class TargetBaseConfig:
-    _model = TargetModel
-    _schema = target_schema
-    _unique_key = 'target'
+# class TargetBaseConfig:
+#     _model = TargetModel
+#     _schema = target_schema
+#     _unique_key = 'target'
 
 
-class TargetResource(TargetBaseConfig, BaseResource):
-    """."""
+# class TargetResource(TargetBaseConfig, BaseResource):
+#     """."""
 
 
-class TargetListResource(TargetBaseConfig, BaseListResource):
-    """."""
+# class TargetListResource(TargetBaseConfig, BaseListResource):
+#     """."""
 
 
-class MaterialBaseConfig:
-    _model = MaterialModel
-    _schema = material_schema
-    _unique_key = 'material'
+# class MaterialBaseConfig:
+#     _model = MaterialModel
+#     _schema = material_schema
+#     _unique_key = 'material'
 
 
-class MaterialResource(MaterialBaseConfig, BaseResource):
-    """."""
+# class MaterialResource(MaterialBaseConfig, BaseResource):
+#     """."""
 
 
-class MaterialListResource(MaterialBaseConfig, BaseListResource):
-    """."""
+# class MaterialListResource(MaterialBaseConfig, BaseListResource):
+#     """."""
 
 
-class DepartmentBaseConfig:
-    _model = DepartmentModel
-    _schema = department_schema
-    # None нужно делать, чтобы не путаться с уникальными полями
-    _unique_key = None
+# class DepartmentBaseConfig:
+#     _model = DepartmentModel
+#     _schema = department_schema
+#     # None нужно делать, чтобы не путаться с уникальными полями
+#     _unique_key = None
 
 
-class DepartmentResource(DepartmentBaseConfig, BaseResource):
-    """."""
+# class DepartmentResource(DepartmentBaseConfig, BaseResource):
+#     """."""
 
 
-class DepartmentListResource(DepartmentBaseConfig, BaseListResource):
-    """."""
+# class DepartmentListResource(DepartmentBaseConfig, BaseListResource):
+#     """."""
 
 
-class BuildingBaseConfig:
-    _model = BuildingModel
-    _schema = building_schema
-    # None нужно делать, чтобы не путаться с уникальными полями
-    _unique_key = None
+# class BuildingBaseConfig:
+#     _model = BuildingModel
+#     _schema = building_schema
+#     # None нужно делать, чтобы не путаться с уникальными полями
+#     _unique_key = None
 
 
-class BuildingResource(BuildingBaseConfig, BaseResource):
-    """."""
+# class BuildingResource(BuildingBaseConfig, BaseResource):
+#     """."""
 
 
-class BuildingListResource(BuildingBaseConfig, BaseListResource):
-    """."""
+# class BuildingListResource(BuildingBaseConfig, BaseListResource):
+#     """."""
 
 
-class HallBaseConfig:
-    _model = HallModel
-    _schema = hall_schema
-    # None нужно делать, чтобы не путаться с уникальными полями
-    _unique_key = None
+# class HallBaseConfig:
+#     _model = HallModel
+#     _schema = hall_schema
+#     # None нужно делать, чтобы не путаться с уникальными полями
+#     _unique_key = None
 
 
-class HallResource(HallBaseConfig, BaseResource):
-    """."""
+# class HallResource(HallBaseConfig, BaseResource):
+#     """."""
 
 
-class HallListResource(HallBaseConfig, BaseListResource):
-    """."""
+# class HallListResource(HallBaseConfig, BaseListResource):
+#     """."""
 
 
-class ChiefBaseConfig:
-    _model = ChiefModel
-    _schema = chief_schema
-    # None нужно делать, чтобы не путаться с уникальными полями
-    _unique_key = None
+# class ChiefBaseConfig:
+#     _model = ChiefModel
+#     _schema = chief_schema
+#     # None нужно делать, чтобы не путаться с уникальными полями
+#     _unique_key = None
 
 
-class ChiefResource(ChiefBaseConfig, BaseResource):
-    """."""
+# class ChiefResource(ChiefBaseConfig, BaseResource):
+#     """."""
 
 
-class ChiefListResource(ChiefBaseConfig, BaseListResource):
-    """."""
+# class ChiefListResource(ChiefBaseConfig, BaseListResource):
+#     """."""
 
 
-class UnitBaseConfig:
-    _model = UnitModel
-    _schema = unit_schema
-    # None нужно делать, чтобы не путаться с уникальными полями
-    _unique_key = None
+# class UnitBaseConfig:
+#     _model = UnitModel
+#     _schema = unit_schema
+#     # None нужно делать, чтобы не путаться с уникальными полями
+#     _unique_key = None
 
 
-class UnitResource(UnitBaseConfig, BaseResource):
-    """."""
+# class UnitResource(UnitBaseConfig, BaseResource):
+#     """."""
 
 
-class UnitListResource(UnitBaseConfig, BaseListResource):
-    """."""
+# class UnitListResource(UnitBaseConfig, BaseListResource):
+#     """."""
 
 
 # --------------------------------- Маршруты --------------------------------- #
 api.add_resource(UserListResource, '/users/')
 api.add_resource(UserResource, '/users/<int:id>')
-api.add_resource(TargetListResource, '/targets/')
-api.add_resource(TargetResource, '/targets/<int:id>')
-api.add_resource(MaterialListResource, '/materials/')
-api.add_resource(MaterialResource, '/materials/<int:id>')
-api.add_resource(DepartmentListResource, '/departments/')
-api.add_resource(DepartmentResource, '/departments/<int:id>')
-api.add_resource(BuildingListResource, '/buildings/')
-api.add_resource(BuildingResource, '/buildings/<int:id>')
-api.add_resource(HallListResource, '/halls/')
-api.add_resource(HallResource, '/halls/<int:id>')
-api.add_resource(ChiefListResource, '/chiefs/')
-api.add_resource(ChiefResource, '/chiefs/<int:id>')
-api.add_resource(UnitListResource, '/units/')
-api.add_resource(UnitResource, '/units/<int:id>')
+# api.add_resource(TargetListResource, '/targets/')
+# api.add_resource(TargetResource, '/targets/<int:id>')
+# api.add_resource(MaterialListResource, '/materials/')
+# api.add_resource(MaterialResource, '/materials/<int:id>')
+# api.add_resource(DepartmentListResource, '/departments/')
+# api.add_resource(DepartmentResource, '/departments/<int:id>')
+# api.add_resource(BuildingListResource, '/buildings/')
+# api.add_resource(BuildingResource, '/buildings/<int:id>')
+# api.add_resource(HallListResource, '/halls/')
+# api.add_resource(HallResource, '/halls/<int:id>')
+# api.add_resource(ChiefListResource, '/chiefs/')
+# api.add_resource(ChiefResource, '/chiefs/<int:id>')
+# api.add_resource(UnitListResource, '/units/')
+# api.add_resource(UnitResource, '/units/<int:id>')

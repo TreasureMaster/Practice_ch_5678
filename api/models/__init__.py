@@ -1,11 +1,12 @@
-from .db import PGCursor, db_init
+# from .db import PGCursor, db_init
 from .models import (
-    BuildingModel,
-    ChiefModel,
-    DepartmentModel,
-    HallModel,
-    MaterialModel,
-    TargetModel,
-    UnitModel,
-    UserModel,
+    db,
+    Building,
+    # ChiefModel,
+    Department,
+    # HallModel,
+    Material,
+    Target,
+    # UnitModel,
+    User,
 )
