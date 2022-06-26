@@ -23,6 +23,10 @@ class BaseSchema(SQLAlchemySchema):
         load_instance = True
         ordered = True
 
+    @property
+    def model(self):
+        return self.opts.model
+
     @post_load
     def make_instance(self, data, **kwargs):
         # аргумент raw_dict_return используется разово

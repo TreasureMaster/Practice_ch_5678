@@ -141,11 +141,11 @@ class BaseResource(UserAuthRequiredResource):
     # method_decorators = [auth.login_required(role='user')]
 
     def get(self, id):
-        entry = self._model.query.get_or_404(id)
+        entry = self._schema.model.query.get_or_404(id)
         return self._schema.dump(entry)
 
     def patch(self, id):
-        entry = self._model.query.get_or_404(id)
+        entry = self._schema.model.query.get_or_404(id)
 
         request_dict = request.get_json()
         if not request_dict:
@@ -154,7 +154,7 @@ class BaseResource(UserAuthRequiredResource):
         # NOTE здесь и валидируем данные, и проверяем уникальность
         try:
             self._schema.context['raw_dict_return'] = True
-            is_unique, error_fields = self._model.check_unique(
+            is_unique, error_fields = self._schema.model.check_unique(
                 request_dict := self._schema.load(request_dict, partial=True), id
             )
         except ValidationError as e:
@@ -180,7 +180,7 @@ class BaseResource(UserAuthRequiredResource):
             )
 
     def delete(self, id):
-        entity = self._model.query.get_or_404(id)
+        entity = self._schema.model.query.get_or_404(id)
         try:
             entity.delete()
         except SQLAlchemyError as e:
@@ -200,7 +200,7 @@ class BaseListResource(UserAuthRequiredResource):
     """Базовый класс ресурса для списка (get, post)"""
 
     def get(self):
-        entries = self._model.query.all()
+        entries = self._schema.model.query.all()
         return self._schema.dump(entries, many=True)
 
     def post(self):
@@ -211,7 +211,7 @@ class BaseListResource(UserAuthRequiredResource):
         # NOTE здесь и валидируем данные, и проверяем уникальность
         try:
             self._schema.context['raw_dict_return'] = True
-            is_unique, error_fields = self._model.check_unique(
+            is_unique, error_fields = self._schema.model.check_unique(
                 self._schema.load(request_dict)
             )
         except ValidationError as e:
@@ -241,8 +241,9 @@ class BaseListResource(UserAuthRequiredResource):
 
 # ---------------------- Инициализация целевых ресурсов ---------------------- #
 class UserBaseConfig(AdminAuthRequired):
-    _model = User
+    # _model = User
     _schema = user_schema
+    # print(_schema.model)
     # _unique_key = 'login'
     # method_decorators = [auth.login_required(role='admin')]
 
