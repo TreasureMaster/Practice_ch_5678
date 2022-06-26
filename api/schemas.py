@@ -47,7 +47,10 @@ class UserSchema(BaseSchema):
         load_only=True,
         data_key='password'
     )
-    is_admin = auto_field(required=True, data_key='admin')
+    is_admin = auto_field(
+        load_default=False,
+        data_key='admin'
+    )
 
     # url = 
 

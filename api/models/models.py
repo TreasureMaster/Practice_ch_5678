@@ -59,32 +59,6 @@ class AddUpdateDelete:
             return False, uniques
         return True, ()
 
-    # @classmethod
-    # def check_unique(cls, entry):
-    #     """Проверяет уникальность всех уникальных полей модели."""
-    #     pk_name = cls.get_primary().name
-    #     uniques = [
-    #         c.name
-    #         if (
-    #             (pk := getattr(entry, pk_name, None)) is None or
-    #             pk != getattr(e, pk_name)
-    #         ) else False
-    #         for c in inspect(cls).columns
-    #         if (
-    #             # Есть ли уникальные поля в модели ?
-    #             c.unique and
-    #             # Получить значение уникального поля проверяемой сущности
-    #             (attr := getattr(entry, c.name, None)) is not None and
-    #             # Проверить есть ли уже такое значение в БД
-    #             (e := cls.query.filter(c == attr).first()) is not None
-    #         )
-    #     ]
-    #     # print('pk:', pk)
-    #     # print('uniques:', uniques)
-    #     if any(uniques):
-    #         return False, uniques
-    #     return True, ()
-
     @classmethod
     def get_primary(cls):
         """Возвращает объект колонки первичного ключа"""
