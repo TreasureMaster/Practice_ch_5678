@@ -2,7 +2,12 @@ import datetime as dt
 from marshmallow import Schema, fields, validate, post_load
 from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 
-from .models import User, db
+from .models import (
+    db,
+    Material,
+    Target,
+    User,
+)
 
 
 # class BaseSchema(Schema):
@@ -59,7 +64,7 @@ class UserSchema(BaseSchema):
     # url = 
 
 
-class TargetSchema(Schema):
+class TargetSchema(BaseSchema):
     IDTarget = fields.Integer(dump_only=True, data_key='id')
     Target = fields.String(
         required=True,
@@ -67,11 +72,11 @@ class TargetSchema(Schema):
         data_key='target'
     )
 
-    class Meta:
-        ordered = True
+    class Meta(BaseSchema.Meta):
+        model = Target
 
 
-class MaterialSchema(Schema):
+class MaterialSchema(BaseSchema):
     IDMaterial = fields.Integer(dump_only=True, data_key='id')
     Material = fields.String(
         required=True,
@@ -79,8 +84,8 @@ class MaterialSchema(Schema):
         data_key='material'
     )
 
-    class Meta:
-        ordered = True
+    class Meta(BaseSchema.Meta):
+        model = Material
 
 
 class DepartmentSchema(Schema):

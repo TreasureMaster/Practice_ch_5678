@@ -127,12 +127,12 @@ class User(db.Model, AddUpdateDelete):
     #     return False
 
 
-class Material:
+class Material(db.Model, AddUpdateDelete):
     """Модель материала здания"""
     __tablename__ = 'materials'
 
     IDMaterial = db.Column(db.Integer, primary_key=True)
-    Material = db.Column(db.String(60), nullable=False)
+    Material = db.Column(db.String(60), nullable=False, unique=True)
     # _table = 'materials'
     # _entity_name = 'Материал'
     # _primary_key = 'IDMaterial'
@@ -145,12 +145,13 @@ class Material:
     #     Material = mm.fields.String(required=True)
 
 
-class Target:
+class Target(db.Model, AddUpdateDelete):
     """Модель назначения помещения"""
     __tablename__ = 'targets'
 
     IDTarget = db.Column(db.Integer, primary_key=True)
-    Target = db.Column(db.String(60), nullable=False)
+    Target = db.Column(db.String(60ш), nullable=False, unique=True)
+    # Target = db.Column(db.String(60, collation='NOCASE'), nullable=False, unique=True)
     # _table = 'targets'
     # _entity_name = 'Тип помещения'
     # _primary_key = 'IDTarget'

@@ -257,32 +257,32 @@ class UserListResource(UserBaseConfig, BaseListResource):
     """."""
 
 
-# class TargetBaseConfig:
-#     _model = TargetModel
-#     _schema = target_schema
-#     _unique_key = 'target'
+class TargetBaseConfig:
+    # _model = TargetModel
+    _schema = target_schema
+    # _unique_key = 'target'
 
 
-# class TargetResource(TargetBaseConfig, BaseResource):
-#     """."""
+class TargetResource(TargetBaseConfig, BaseResource):
+    """."""
 
 
-# class TargetListResource(TargetBaseConfig, BaseListResource):
-#     """."""
+class TargetListResource(TargetBaseConfig, BaseListResource):
+    """."""
 
 
-# class MaterialBaseConfig:
-#     _model = MaterialModel
-#     _schema = material_schema
-#     _unique_key = 'material'
+class MaterialBaseConfig:
+    # _model = MaterialModel
+    _schema = material_schema
+    # _unique_key = 'material'
 
 
-# class MaterialResource(MaterialBaseConfig, BaseResource):
-#     """."""
+class MaterialResource(MaterialBaseConfig, BaseResource):
+    """."""
 
 
-# class MaterialListResource(MaterialBaseConfig, BaseListResource):
-#     """."""
+class MaterialListResource(MaterialBaseConfig, BaseListResource):
+    """."""
 
 
 # class DepartmentBaseConfig:
@@ -363,10 +363,10 @@ class UserListResource(UserBaseConfig, BaseListResource):
 # --------------------------------- Маршруты --------------------------------- #
 api.add_resource(UserListResource, '/users/')
 api.add_resource(UserResource, '/users/<int:id>')
-# api.add_resource(TargetListResource, '/targets/')
-# api.add_resource(TargetResource, '/targets/<int:id>')
-# api.add_resource(MaterialListResource, '/materials/')
-# api.add_resource(MaterialResource, '/materials/<int:id>')
+api.add_resource(TargetListResource, '/targets/')
+api.add_resource(TargetResource, '/targets/<int:id>')
+api.add_resource(MaterialListResource, '/materials/')
+api.add_resource(MaterialResource, '/materials/<int:id>')
 # api.add_resource(DepartmentListResource, '/departments/')
 # api.add_resource(DepartmentResource, '/departments/<int:id>')
 # api.add_resource(BuildingListResource, '/buildings/')
