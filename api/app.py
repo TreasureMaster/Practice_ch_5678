@@ -1,5 +1,6 @@
 from flask import Flask, g
 from flask_apiexceptions import JSONExceptionHandler, api_exception_handler
+from flask_migrate import Migrate
 
 
 def create_app(config_filename):
@@ -20,6 +21,7 @@ def create_app(config_filename):
     # from .models.models import db
     from .models import db
     db.init_app(app)
+    migrate = Migrate(app, db)
 
     # from .db import get_db
     # with app.app_context():
