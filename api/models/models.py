@@ -208,7 +208,7 @@ class Building:
         db.ForeignKey('materials.IDMaterial'),
         nullable=False
     )
-    Material = db.relationship('Material')
+    Material = db.relationship('Material', cascade='all, delete')
     # Wear = db.Column(db.)
     # _table = 'buildings'
     # _entity_name = 'Здание'

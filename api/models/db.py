@@ -4,7 +4,10 @@ import psycopg2.extras
 
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-from .config import PG_DB_NAME, SQL_INIT_FILE
+if __name__ == '__main__':
+    from config import PG_DB_NAME, SQL_INIT_FILE, SQL_FILL_FILE
+else:
+    from .config import PG_DB_NAME, SQL_INIT_FILE, SQL_FILL_FILE
 
 
 def get_db(dbname='postgres'):
@@ -115,5 +118,6 @@ if __name__ == '__main__':
 
     # print('--- DB init' + '-'*50)
     # db_init('python_db')
-    db_init()
+    # db_init()
     # main()
+    db_fill(SQL_FILL_FILE, PG_DB_NAME)
