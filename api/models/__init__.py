@@ -10,3 +10,4 @@ from .models import (
     # UnitModel,
     User,
 )
+from .config import SQL_INIT_FILE

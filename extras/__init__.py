@@ -3,3 +3,4 @@ from .extra_funcs import (
     identify_error,
     update_error_keys,
 )
+from .sqlparser import get_inserts_from_files
