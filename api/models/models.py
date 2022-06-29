@@ -54,7 +54,8 @@ class AddUpdateDelete:
                 # Получить значение уникального поля проверяемой сущности
                 (attr := fields.get(c.name, None)) is not None and
                 # Проверить есть ли уже такое значение в БД
-                (e := cls.query.filter(c == attr).first()) is not None
+                # (e := cls.query.filter(c == attr).first()) is not None
+                (e := cls.get_not_unique(c, attr)) is not None
             )
         ]
         if any(uniques):
@@ -66,6 +67,13 @@ class AddUpdateDelete:
         """Возвращает объект колонки первичного ключа"""
         # NOTE реализация только для простого первичного ключа (не составного)
         return inspect(cls).primary_key[0]
+
+    @classmethod
+    def get_not_unique(cls, column, attr):
+        """Возвращает первое попавшееся не уникальное поле для заданной колонки
+        или None, если его нет.
+        """
+        return cls.query.filter(column == attr).first()
 
     # @classmethod
     # def get_last_item(cls):
