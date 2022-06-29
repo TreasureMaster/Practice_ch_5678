@@ -1,8 +1,8 @@
 """Initial migration.
 
-Revision ID: abf69c84f53f
+Revision ID: eadb19694a58
 Revises: 
-Create Date: 2022-06-27 12:46:23.845732
+Create Date: 2022-06-29 10:10:37.750197
 
 """
 from alembic import op
@@ -13,7 +13,7 @@ from extras import get_inserts_from_files
 
 
 # revision identifiers, used by Alembic.
-revision = 'abf69c84f53f'
+revision = 'eadb19694a58'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -63,7 +63,3 @@ def downgrade():
     op.drop_table('targets')
     op.drop_table('materials')
     # ### end Alembic commands ###
-
-
-def get_insert_data():
-    pass

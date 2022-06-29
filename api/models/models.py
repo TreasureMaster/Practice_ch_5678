@@ -151,6 +151,7 @@ class Target(db.Model, AddUpdateDelete):
 
     IDTarget = db.Column(db.Integer, primary_key=True)
     Target = db.Column(db.String(60), nullable=False, unique=True)
+    # NOTE collation='NOCASE' не используется для UTF-8
     # Target = db.Column(db.String(60, collation='NOCASE'), nullable=False, unique=True)
     # _table = 'targets'
     # _entity_name = 'Тип помещения'
