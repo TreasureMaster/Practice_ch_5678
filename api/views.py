@@ -225,7 +225,7 @@ class BaseListResource(UserAuthRequiredResource):
             new_entry = self._schema.load(request_dict)
 
         try:
-            new_entry.add()
+            new_entry.create()
         except SQLAlchemyError as e:
             db.session.rollback()
             return make_response(

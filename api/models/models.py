@@ -14,14 +14,16 @@ class AddUpdateDelete:
     # список полей, которые нужно шифровать перед записью в БД
     _secret_fields = ()
 
-    def add(self):
+    def _add(self):
         db.session.add(self)
         db.session.commit()
 
+    def create(self):
+        self._add()
+
     def update(self, patched_fields):
         self.patch_fields(patched_fields)
-        db.session.add(self)
-        db.session.commit()
+        self._add()
 
     def delete(self):
         db.session.delete(self)
@@ -328,3 +330,8 @@ class Building:
 
 #         class Meta:
 #             unknown = mm.EXCLUDE
+
+
+if __name__ == '__main__':
+    # NOTE доп.атрибуты: _sa_registry, metadata, query, query_class, registry
+    print(dir(db.Model))
