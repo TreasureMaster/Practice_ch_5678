@@ -4,6 +4,7 @@ from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 
 from .models import (
     db,
+    Department,
     Material,
     Target,
     User,
@@ -65,8 +66,8 @@ class UserSchema(BaseSchema):
 
 
 class TargetSchema(BaseSchema):
-    IDTarget = fields.Integer(dump_only=True, data_key='id')
-    Target = fields.String(
+    IDTarget = auto_field(dump_only=True, data_key='id')
+    Target = auto_field(
         required=True,
         validate=validate.Length(1),
         data_key='target'
@@ -77,8 +78,8 @@ class TargetSchema(BaseSchema):
 
 
 class MaterialSchema(BaseSchema):
-    IDMaterial = fields.Integer(dump_only=True, data_key='id')
-    Material = fields.String(
+    IDMaterial = auto_field(dump_only=True, data_key='id')
+    Material = auto_field(
         required=True,
         validate=validate.Length(1),
         data_key='material'
@@ -88,30 +89,30 @@ class MaterialSchema(BaseSchema):
         model = Material
 
 
-class DepartmentSchema(Schema):
-    IDDepartment = fields.Integer(dump_only=True, data_key='id')
-    DepartmentName = fields.String(
+class DepartmentSchema(BaseSchema):
+    IDDepartment = auto_field(dump_only=True, data_key='id')
+    DepartmentName = auto_field(
         required=True,
         validate=validate.Length(1),
         data_key='department',
     )
-    Boss = fields.String(
+    Boss = auto_field(
         required=True,
         validate=validate.Length(3),
         data_key='boss',
     )
-    Phone = fields.Integer(
+    Phone = auto_field(
         required=True,
         data_key='phone',
     )
-    OfficeDean = fields.String(
+    OfficeDean = auto_field(
         required=True,
         validate=validate.Length(1),
         data_key='dienery',
     )
 
-    class Meta:
-        ordered = True
+    class Meta(BaseSchema.Meta):
+        model = Department
 
 
 class BuildingSchema(Schema):

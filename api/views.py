@@ -4,17 +4,7 @@ from flask_httpauth import HTTPBasicAuth
 from marshmallow import ValidationError, INCLUDE
 from sqlalchemy.exc import SQLAlchemyError
 
-from .models import (
-    db,
-    Building,
-    # ChiefModel,
-    Department,
-    # HallModel,
-    Material,
-    Target,
-    # UnitModel,
-    User,
-)
+from .models import db
 from .schemas import (
     building_schema,
     chief_schema,
@@ -241,10 +231,7 @@ class BaseListResource(UserAuthRequiredResource):
 
 # ---------------------- Инициализация целевых ресурсов ---------------------- #
 class UserBaseConfig(AdminAuthRequired):
-    # _model = User
     _schema = user_schema
-    # print(_schema.model)
-    # _unique_key = 'login'
     # method_decorators = [auth.login_required(role='admin')]
 
 
@@ -258,9 +245,7 @@ class UserListResource(UserBaseConfig, BaseListResource):
 
 
 class TargetBaseConfig:
-    # _model = TargetModel
     _schema = target_schema
-    # _unique_key = 'target'
 
 
 class TargetResource(TargetBaseConfig, BaseResource):
@@ -272,9 +257,7 @@ class TargetListResource(TargetBaseConfig, BaseListResource):
 
 
 class MaterialBaseConfig:
-    # _model = MaterialModel
     _schema = material_schema
-    # _unique_key = 'material'
 
 
 class MaterialResource(MaterialBaseConfig, BaseResource):
@@ -285,19 +268,16 @@ class MaterialListResource(MaterialBaseConfig, BaseListResource):
     """."""
 
 
-# class DepartmentBaseConfig:
-#     _model = DepartmentModel
-#     _schema = department_schema
-#     # None нужно делать, чтобы не путаться с уникальными полями
-#     _unique_key = None
+class DepartmentBaseConfig:
+    _schema = department_schema
 
 
-# class DepartmentResource(DepartmentBaseConfig, BaseResource):
-#     """."""
+class DepartmentResource(DepartmentBaseConfig, BaseResource):
+    """."""
 
 
-# class DepartmentListResource(DepartmentBaseConfig, BaseListResource):
-#     """."""
+class DepartmentListResource(DepartmentBaseConfig, BaseListResource):
+    """."""
 
 
 # class BuildingBaseConfig:
@@ -367,8 +347,8 @@ api.add_resource(TargetListResource, '/targets/')
 api.add_resource(TargetResource, '/targets/<int:id>')
 api.add_resource(MaterialListResource, '/materials/')
 api.add_resource(MaterialResource, '/materials/<int:id>')
-# api.add_resource(DepartmentListResource, '/departments/')
-# api.add_resource(DepartmentResource, '/departments/<int:id>')
+api.add_resource(DepartmentListResource, '/departments/')
+api.add_resource(DepartmentResource, '/departments/<int:id>')
 # api.add_resource(BuildingListResource, '/buildings/')
 # api.add_resource(BuildingResource, '/buildings/<int:id>')
 # api.add_resource(HallListResource, '/halls/')

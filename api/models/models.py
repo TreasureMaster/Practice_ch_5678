@@ -4,13 +4,10 @@ import typing as t
 from collections import OrderedDict
 
 import sqlalchemy as sa
-from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.sql import func
 from werkzeug.security import generate_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
-# import marshmallow as mm
-# import marshmallow.validate as mmv
 
 
 db = SQLAlchemy()
@@ -70,7 +67,6 @@ class OperationMixin:
                 # Получить значение уникального поля проверяемой сущности
                 (attr := fields.get(c.name, None)) is not None and
                 # Проверить есть ли уже такое значение в БД
-                # (e := cls.query.filter(c == attr).first()) is not None
                 (e := cls.get_not_unique(c, attr)) is not None
             )
         ]
@@ -204,12 +200,13 @@ class Target(db.Model, OperationMixin):
     #     Target = mm.fields.String(required=True)
 
 
-class Department:
+class Department(db.Model, OperationMixin):
     """Модель кафедры"""
     __tablename__ = 'departments'
 
     IDDepartment = db.Column(db.Integer, primary_key=True)
     DepartmentName = db.Column(db.String(60), nullable=False)
+    Boss = db.Column(db.String(60), nullable=False)
     Phone = db.Column(db.BigInteger, nullable=False)
     OfficeDean = db.Column(db.String(60), nullable=False)
 
