@@ -10,7 +10,7 @@ from sqlalchemy.inspection import inspect
 db = SQLAlchemy()
 
 
-class AddUpdateDelete:
+class OperationMixin:
     # список полей, которые нужно шифровать перед записью в БД
     _secret_fields = ()
 
@@ -81,7 +81,7 @@ class AddUpdateDelete:
     #     return cls.query.order_by(cls.get_primary().desc()).first()
 
 
-class User(db.Model, AddUpdateDelete):
+class User(db.Model, OperationMixin):
     """Модель пользователя"""
     __tablename__ = 'users'
     _secret_fields = ('Password',)
@@ -137,7 +137,7 @@ class User(db.Model, AddUpdateDelete):
     #     return False
 
 
-class Material(db.Model, AddUpdateDelete):
+class Material(db.Model, OperationMixin):
     """Модель материала здания"""
     __tablename__ = 'materials'
 
@@ -155,7 +155,7 @@ class Material(db.Model, AddUpdateDelete):
     #     Material = mm.fields.String(required=True)
 
 
-class Target(db.Model, AddUpdateDelete):
+class Target(db.Model, OperationMixin):
     """Модель назначения помещения"""
     __tablename__ = 'targets'
 
