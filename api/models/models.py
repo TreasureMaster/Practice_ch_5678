@@ -1,5 +1,11 @@
 import datetime as dt
+import typing as t
 
+from collections import OrderedDict
+
+import sqlalchemy as sa
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
+from sqlalchemy.sql import func
 from werkzeug.security import generate_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
@@ -13,25 +19,31 @@ db = SQLAlchemy()
 class OperationMixin:
     # список полей, которые нужно шифровать перед записью в БД
     _secret_fields = ()
+    # список уникальных полей, которые нужно проверять, игнорируя регистр символов
+    _icase_unique_fields = ()
 
     def _add(self):
+        """Общий метод добавления объекта в сессию и его фиксацию"""
         db.session.add(self)
         db.session.commit()
 
     def create(self):
+        """Создает объект в БД"""
         self._add()
 
-    def update(self, patched_fields):
-        self.patch_fields(patched_fields)
+    def update(
+        self,
+        patched_fields: t.Union[dict, OrderedDict]
+    ) -> None:
+        """Обновляет объект в БД"""
+        for field, value in patched_fields.items():
+            setattr(self, field, value)
         self._add()
 
     def delete(self):
+        """Удаляет объект из БД"""
         db.session.delete(self)
         db.session.commit()
-
-    def patch_fields(self, patched_fields):
-        for field, value in patched_fields.items():
-            setattr(self, field, value)
 
     def encrypting(self):
         """Шифрование полей, которые должны быть зашифрованы перед помещением в БД"""
@@ -41,7 +53,11 @@ class OperationMixin:
         return self
 
     @classmethod
-    def check_unique(cls, fields, pk=None):
+    def check_unique(
+        cls,
+        fields: t.Union[dict, OrderedDict],
+        pk: t.Optional[int] = None
+    ) -> t.Tuple[bool, tuple]:
         """Проверяет уникальность всех уникальных полей модели."""
         pk_name = cls.get_primary().name
         uniques = [
@@ -69,10 +85,16 @@ class OperationMixin:
         return inspect(cls).primary_key[0]
 
     @classmethod
-    def get_not_unique(cls, column, attr):
+    def get_not_unique(
+        cls,
+        column: sa.Column,
+        attr: t.Any,
+    ) -> t.Optional[db.Model]:
         """Возвращает первое попавшееся не уникальное поле для заданной колонки
         или None, если его нет.
         """
+        if column.name in cls._icase_unique_fields:
+            return cls.query.filter(func.lower(column) == attr.lower()).all()
         return cls.query.filter(column == attr).first()
 
     # @classmethod
@@ -85,11 +107,16 @@ class User(db.Model, OperationMixin):
     """Модель пользователя"""
     __tablename__ = 'users'
     _secret_fields = ('Password',)
+    _icase_unique_fields = ('Login',)
 
     IDUser = db.Column(db.Integer, primary_key=True)
     Login = db.Column(db.String(32), nullable=False, unique=True)
     Password = db.Column(db.String(255), nullable=False)
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
+
+    def __repr__(self) -> str:
+        return '<User(IDUser={}, Login={}, is_admin={}>'.format(self.IDUser, self.Login, self.is_admin)
+
     # _table = 'users'
     # _entity_name = 'Пользователь'
     # _primary_key = 'IDUser'
@@ -140,6 +167,7 @@ class User(db.Model, OperationMixin):
 class Material(db.Model, OperationMixin):
     """Модель материала здания"""
     __tablename__ = 'materials'
+    _icase_unique_fields = ('Material',)
 
     IDMaterial = db.Column(db.Integer, primary_key=True)
     Material = db.Column(db.String(60), nullable=False, unique=True)
@@ -158,6 +186,7 @@ class Material(db.Model, OperationMixin):
 class Target(db.Model, OperationMixin):
     """Модель назначения помещения"""
     __tablename__ = 'targets'
+    _icase_unique_fields = ('Target',)
 
     IDTarget = db.Column(db.Integer, primary_key=True)
     Target = db.Column(db.String(60), nullable=False, unique=True)
