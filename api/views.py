@@ -292,19 +292,16 @@ class BuildingListResource(BuildingBaseConfig, BaseListResource):
     """."""
 
 
-# class HallBaseConfig:
-#     _model = HallModel
-#     _schema = hall_schema
-#     # None нужно делать, чтобы не путаться с уникальными полями
-#     _unique_key = None
+class HallBaseConfig:
+    _schema = hall_schema
 
 
-# class HallResource(HallBaseConfig, BaseResource):
-#     """."""
+class HallResource(HallBaseConfig, BaseResource):
+    """."""
 
 
-# class HallListResource(HallBaseConfig, BaseListResource):
-#     """."""
+class HallListResource(HallBaseConfig, BaseListResource):
+    """."""
 
 
 # class ChiefBaseConfig:
@@ -348,9 +345,11 @@ api.add_resource(DepartmentListResource, '/departments/')
 api.add_resource(DepartmentResource, '/departments/<int:id>')
 api.add_resource(BuildingListResource, '/buildings/')
 api.add_resource(BuildingResource, '/buildings/<int:id>')
-# api.add_resource(HallListResource, '/halls/')
-# api.add_resource(HallResource, '/halls/<int:id>')
+api.add_resource(HallListResource, '/halls/')
+api.add_resource(HallResource, '/halls/<int:id>')
 # api.add_resource(ChiefListResource, '/chiefs/')
 # api.add_resource(ChiefResource, '/chiefs/<int:id>')
 # api.add_resource(UnitListResource, '/units/')
 # api.add_resource(UnitResource, '/units/<int:id>')
+
+from flask_migrate import migrate

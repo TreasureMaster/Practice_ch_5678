@@ -90,7 +90,7 @@ class OperationMixin:
         или None, если его нет.
         """
         if column.name in cls._icase_unique_fields:
-            return cls.query.filter(func.lower(column) == attr.lower()).all()
+            return cls.query.filter(func.lower(column) == attr.lower()).first()
         return cls.query.filter(column == attr).first()
 
     # @classmethod
@@ -216,15 +216,46 @@ class Building(db.Model, OperationMixin):
     Material = db.relationship('Material', uselist=False)
 
 
-# class Hall:
-#     """Модель помещения"""
-#     __tablename__ = 'halls'
+class Hall(db.Model, OperationMixin):
+    """Модель помещения"""
+    __tablename__ = 'halls'
 
-#     IDHall = db.Column(db.Integer, primary_key=True)
-#     HallNumber = db.Column(db.SmallInteger, nullable=False)
-#     HallSqaure = db.Column(db.Numeric(precision=10, scale=2), nullable=False)
-#     Windows = db.Column(db.SmallInteger, nullable=False)
-#     Heaters = db.Column(db.SmallInteger, nullable=False)
+    IDHall = db.Column(db.Integer, primary_key=True)
+    HallNumber = db.Column(db.SmallInteger)
+    # HallName = db.Column(db.String(60))
+    HallSquare = db.Column(db.Numeric(precision=10, scale=2), nullable=False)
+    Windows = db.Column(db.SmallInteger, nullable=False)
+    Heaters = db.Column(db.SmallInteger, nullable=False)
+    TargetID = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            'targets.IDTarget',
+            ondelete='SET NULL',
+            onupdate='CASCADE',
+        ),
+        default=None,
+    )
+    Target = db.relationship('Target', uselist=False)
+    DepartmentID = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            'departments.IDDepartment',
+            ondelete='SET NULL',
+            onupdate='CASCADE',
+        ),
+        default=None,
+    )
+    Department = db.relationship('Department', uselist=False)
+    KadastrID = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            'buildings.IDKadastr',
+            ondelete='CASCADE',
+            onupdate='CASCADE',
+        ),
+        nullable=False,
+    )
+    Building = db.relationship('Building', uselist=False)
 
     # _table = 'halls'
     # _entity_name = 'Помещение'

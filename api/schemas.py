@@ -6,6 +6,7 @@ from .models import (
     db,
     Building,
     Department,
+    Hall,
     Material,
     Target,
     User,
@@ -184,67 +185,92 @@ class BuildingSchema(BaseSchema):
         include_relationships = True
 
 
-class HallSchema(Schema):
-    IDHall = fields.Integer(dump_only=True, data_key='id')
-    HallNumber = fields.Integer(
+class HallSchema(BaseSchema):
+    IDHall = auto_field(dump_only=True, data_key='id')
+    HallNumber = auto_field(
         required=True,
-        validate=validate.Range(min=0),
+        allow_none=True,
+        validate=validate.Range(min=1),
         data_key='number',
     )
+    # HallName = auto_field(
+    #     required=True,
+    #     allow_none=True,
+    #     validate=validate.Length(min=1, max=60),
+    #     data_key='name',
+    # )
     HallSquare = fields.Float(
         required=True,
         validate=validate.Range(min=0.0),
         data_key='square',
     )
-    Windows = fields.Integer(
+    Windows = auto_field(
         required=True,
         validate=validate.Range(min=0),
         data_key='windows',
     )
-    Heaters = fields.Integer(
+    Heaters = auto_field(
         required=True,
         validate=validate.Range(min=0),
         data_key='heaters',
     )
-    TargetID = fields.Integer(
+    TargetID = auto_field(
         required=True,
         validate=validate.Range(min=1),
         data_key='target_id',
     )
-    Target = fields.String(
-        required=True,
+    Target = fields.Pluck(
+        TargetSchema,
+        'Target',
         dump_only=True,
         data_key='target',
     )
-    DepartmentID = fields.Integer(
+    DepartmentID = auto_field(
         required=True,
         validate=validate.Range(min=1),
         data_key='department_id',
         # attribute='IDDepartment',
     )
-    DepartmentName = fields.String(
-        required=True,
+    Department = fields.Pluck(
+        DepartmentSchema,
+        'DepartmentName',
         dump_only=True,
         data_key='department',
     )
-    KadastrID = fields.Integer(
+    KadastrID = auto_field(
         required=True,
         validate=validate.Range(min=1),
         data_key='building_id',
     )
-    BuildingName = fields.String(
-        required=True,
+    Building = fields.Pluck(
+        BuildingSchema,
+        'BuildingName',
         dump_only=True,
         data_key='building',
     )
-    HallName = fields.String(
-        required=True,
-        dump_only=True,
-        data_key='hall',
-    )
+    # HallTitle = fields.Method(
+    #     'get_hall_title',
+    #     dump_only=True,
+    #     data_key='hall',
+    # )
 
-    class Meta:
-        ordered = True
+    class Meta(BaseSchema.Meta):
+        model = Hall
+        include_fk = True
+        include_relationships = True
+
+    # def get_hall_title(self, hall):
+    #     """."""
+    #     title = ''
+    #     if hall.HallNumber is not None:
+    #         title += f'{hall.HallNumber}'
+    #     if (target := hall.Target.Target) is not None:
+    #         title += '{}{}'.format(
+    #             f', ' if title else '',
+    #             target
+    #         )
+    #     return title if title else 'Не определено'
+
 
 
 class ChiefSchema(Schema):

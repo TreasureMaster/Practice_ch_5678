@@ -63,28 +63,28 @@ ALTER TABLE public.departments
 CREATE TABLE IF NOT EXISTS public.halls
 (
     "IDHall" serial NOT NULL,
-    "HallNumber" SMALLINT NOT NULL,
+    "HallNumber" SMALLINT,
     "HallSquare" NUMERIC(10, 2) NOT NULL,
     "Windows" SMALLINT NOT NULL,
     "Heaters" SMALLINT NOT NULL,
-    "TargetID" INTEGER NOT NULL,
-    "DepartmentID" INTEGER NOT NULL,
+    "TargetID" INTEGER,
+    "DepartmentID" INTEGER,
     "KadastrID" INTEGER NOT NULL,
     CONSTRAINT halls_pkey PRIMARY KEY ("IDHall"),
     CONSTRAINT target_fkey FOREIGN KEY ("TargetID")
         REFERENCES public.targets ("IDTarget") MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
         NOT VALID,
     CONSTRAINT department_fkey FOREIGN KEY ("DepartmentID")
         REFERENCES public.departments ("IDDepartment") MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
         NOT VALID,
     CONSTRAINT kadastr_fkey FOREIGN KEY ("KadastrID")
         REFERENCES public.buildings ("IDKadastr") MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
         NOT VALID
 );
 
@@ -165,7 +165,8 @@ VALUES
 ('аудитория'),
 ('лаборатория'),
 ('вычислительный центр'),
-('деканат');
+('деканат'),
+('спортзал');
 
 -- Кафедра
 INSERT INTO public.departments
@@ -183,7 +184,8 @@ VALUES
 (101, 48, 5, 5, 1, 1, 2),
 (202, 44, 4, 4, 1, 2, 2),
 (122, 32, 3, 3, 2, 3, 3),
-(308, 46, 4, 4, 4, 4, 3);
+(308, 46, 4, 4, 4, 4, 3),
+(null, 16, 1, 2, 5, 4, 3);
 
 -- Здания
 INSERT INTO public.chiefs

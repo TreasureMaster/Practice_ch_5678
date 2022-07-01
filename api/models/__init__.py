@@ -4,7 +4,7 @@ from .models import (
     Building,
     # ChiefModel,
     Department,
-    # HallModel,
+    Hall,
     Material,
     Target,
     # UnitModel,
