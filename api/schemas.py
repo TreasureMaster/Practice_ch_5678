@@ -4,6 +4,7 @@ from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 
 from .models import (
     db,
+    Building,
     Department,
     Material,
     Target,
@@ -115,11 +116,11 @@ class DepartmentSchema(BaseSchema):
         model = Department
 
 
-class BuildingSchema(Schema):
-    IDKadastr = fields.Integer(dump_only=True, data_key='id')
-    BuildingName = fields.String(
+class BuildingSchema(BaseSchema):
+    IDKadastr = auto_field(dump_only=True, data_key='id')
+    BuildingName = auto_field(
         required=True,
-        validate=validate.Length(1),
+        validate=validate.Length(min=1, max=60),
         data_key='building',
     )
     Land = fields.Float(
@@ -127,12 +128,12 @@ class BuildingSchema(Schema):
         validate=validate.Range(min=0.0),
         data_key='land',
     )
-    Address = fields.String(
+    Address = auto_field(
         required=True,
-        validate=validate.Length(1),
+        validate=validate.Length(min=1, max=250),
         data_key='address',
     )
-    Year = fields.Integer(
+    Year = auto_field(
         required=True,
         validate=validate.Range(
             min=1600,
@@ -140,38 +141,47 @@ class BuildingSchema(Schema):
         ),
         data_key='year',
     )
-    Wear = fields.Integer(
+    Wear = auto_field(
         required=True,
         validate=validate.Range(min=0, max=100),
         data_key='wear',
     )
-    Flow = fields.Integer(
+    Flow = auto_field(
         required=True,
         validate=validate.Range(min=1, max=100),
         data_key='flow',
     )
-    Picture = fields.String(allow_none=True, load_default=None)
-    Comment = fields.String(allow_none=True, load_default=None)
+    Picture = auto_field(
+        allow_none=True,
+        load_default=None,
+        validate=validate.Length(max=250),
+    )
+    Comment = auto_field(allow_none=True, load_default=None)
     # MaterialID = fields.Nested(
     #     MaterialSchema(only=('Material',)),
     #     required=True,
     #     # only=('Material',)
     #     data_key='material',
     # )
-    # Эта схема работы только для своей ОРМ; для SQLAlchemy нужно будет переделать
-    MaterialID = fields.Integer(
+    MaterialID = auto_field(
         required=True,
+        allow_none=True,
         validate=validate.Range(min=1),
         data_key='material_id',
     )
-    Material = fields.String(
-        required=True,
+    # Nested - будет весь словарь данных Material
+    # Pluck - только одно, выбранное значение
+    Material = fields.Pluck(
+        MaterialSchema,
+        'Material',
         dump_only=True,
         data_key='material',
     )
 
-    class Meta:
-        ordered = True
+    class Meta(BaseSchema.Meta):
+        model = Building
+        include_fk = True
+        include_relationships = True
 
 
 class HallSchema(Schema):

@@ -167,16 +167,6 @@ class Material(db.Model, OperationMixin):
 
     IDMaterial = db.Column(db.Integer, primary_key=True)
     Material = db.Column(db.String(60), nullable=False, unique=True)
-    # _table = 'materials'
-    # _entity_name = 'Материал'
-    # _primary_key = 'IDMaterial'
-    # _unique_field = 'Material'
-    # _fields = {
-    #     'Material': RequiredField(),
-    # }
-    # class ValidateSchema(mm.Schema):
-    #     """Схема валидации модели."""
-    #     Material = mm.fields.String(required=True)
 
 
 class Target(db.Model, OperationMixin):
@@ -188,16 +178,6 @@ class Target(db.Model, OperationMixin):
     Target = db.Column(db.String(60), nullable=False, unique=True)
     # NOTE collation='NOCASE' не используется для UTF-8
     # Target = db.Column(db.String(60, collation='NOCASE'), nullable=False, unique=True)
-    # _table = 'targets'
-    # _entity_name = 'Тип помещения'
-    # _primary_key = 'IDTarget'
-    # _unique_field = 'Target'
-    # _fields = {
-    #     'Target': RequiredField(),
-    # }
-    # class ValidateSchema(mm.Schema):
-    #     """Схема валидации модели."""
-    #     Target = mm.fields.String(required=True)
 
 
 class Department(db.Model, OperationMixin):
@@ -210,24 +190,8 @@ class Department(db.Model, OperationMixin):
     Phone = db.Column(db.BigInteger, nullable=False)
     OfficeDean = db.Column(db.String(60), nullable=False)
 
-    # _table = 'departments'
-    # _entity_name = 'Кафедра'
-    # _primary_key = 'IDDepartment'
-    # _fields = {
-    #     'DepartmentName': RequiredField(),
-    #     'Boss': RequiredField(),
-    #     'Phone': RequiredField(),
-    #     'OfficeDean': RequiredField(),
-    # }
-    # class ValidateSchema(mm.Schema):
-    #     """Схема валидации модели."""
-    #     DepartmentName = mm.fields.String(required=True)
-    #     Boss = mm.fields.String(required=True)
-    #     Phone = mm.fields.Integer(required=True)
-    #     OfficeDean = mm.fields.String(required=True)
 
-
-class Building:
+class Building(db.Model, OperationMixin):
     """Модель здания"""
     __tablename__ = 'buildings'
 
@@ -242,38 +206,14 @@ class Building:
     Comment = db.Column(db.Text)
     MaterialID = db.Column(
         db.Integer,
-        db.ForeignKey('materials.IDMaterial'),
-        nullable=False
+        db.ForeignKey(
+            'materials.IDMaterial',
+            ondelete='SET NULL',
+            onupdate='CASCADE',
+        ),
+        default=None,
     )
-    Material = db.relationship('Material', cascade='all, delete')
-    # Wear = db.Column(db.)
-    # _table = 'buildings'
-    # _entity_name = 'Здание'
-    # _primary_key = 'IDKadastr'
-    # _fields = {
-    #     'BuildingName': RequiredField(),
-    #     'Land': RequiredField(),
-    #     'Address': RequiredField(),
-    #     'Year': RequiredField(),
-    #     'Wear': RequiredField(),
-    #     'Flow': RequiredField(),
-    #     'Picture': None,
-    #     'Comment': None,
-    #     'MaterialID': backref(MaterialModel),
-    # }
-    # class ValidateSchema(mm.Schema):
-    #     """Схема валидации модели."""
-    #     BuildingName = mm.fields.String(required=True)
-    #     Land = mm.fields.Float(required=True)
-    #     Address = mm.fields.String(required=True)
-    #     Year = mm.fields.Integer(required=True, validate=mmv.Range(min=1600, max=dt.datetime.now().year))
-    #     Wear = mm.fields.Integer(required=True, validate=mmv.Range(min=0, max=100))
-    #     Flow = mm.fields.Integer(required=True, validate=mmv.Range(min=1, max=100))
-    #     Picture = mm.fields.String(allow_none=True)
-    #     Comment = mm.fields.String(allow_none=True)
-
-    #     class Meta:
-    #         unknown = mm.EXCLUDE
+    Material = db.relationship('Material', uselist=False)
 
 
 # class Hall:

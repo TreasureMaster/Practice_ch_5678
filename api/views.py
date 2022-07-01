@@ -280,19 +280,16 @@ class DepartmentListResource(DepartmentBaseConfig, BaseListResource):
     """."""
 
 
-# class BuildingBaseConfig:
-#     _model = BuildingModel
-#     _schema = building_schema
-#     # None нужно делать, чтобы не путаться с уникальными полями
-#     _unique_key = None
+class BuildingBaseConfig:
+    _schema = building_schema
 
 
-# class BuildingResource(BuildingBaseConfig, BaseResource):
-#     """."""
+class BuildingResource(BuildingBaseConfig, BaseResource):
+    """."""
 
 
-# class BuildingListResource(BuildingBaseConfig, BaseListResource):
-#     """."""
+class BuildingListResource(BuildingBaseConfig, BaseListResource):
+    """."""
 
 
 # class HallBaseConfig:
@@ -349,8 +346,8 @@ api.add_resource(MaterialListResource, '/materials/')
 api.add_resource(MaterialResource, '/materials/<int:id>')
 api.add_resource(DepartmentListResource, '/departments/')
 api.add_resource(DepartmentResource, '/departments/<int:id>')
-# api.add_resource(BuildingListResource, '/buildings/')
-# api.add_resource(BuildingResource, '/buildings/<int:id>')
+api.add_resource(BuildingListResource, '/buildings/')
+api.add_resource(BuildingResource, '/buildings/<int:id>')
 # api.add_resource(HallListResource, '/halls/')
 # api.add_resource(HallResource, '/halls/<int:id>')
 # api.add_resource(ChiefListResource, '/chiefs/')

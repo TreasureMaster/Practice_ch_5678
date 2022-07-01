@@ -21,12 +21,12 @@ CREATE TABLE IF NOT EXISTS public.buildings
     "Flow" SMALLINT NOT NULL,
     "Picture" VARCHAR(250),
     "Comment" TEXT,
-    "MaterialID" INTEGER NOT NULL,
+    "MaterialID" INTEGER,
     CONSTRAINT kadastr_pkey PRIMARY KEY ("IDKadastr"),
     CONSTRAINT material_fkey FOREIGN KEY ("MaterialID")
         REFERENCES public.materials ("IDMaterial") MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
         NOT VALID
 );
 
