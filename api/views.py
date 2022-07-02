@@ -1,3 +1,4 @@
+import http
 from flask import Blueprint, request, make_response, g, current_app, jsonify
 from flask_restful import Api, Resource
 from flask_httpauth import HTTPBasicAuth
@@ -22,7 +23,6 @@ from .api_exceptions import (
     NotFoundResourceError,
     NotUniqueDataError,
 )
-from . import status
 
 
 # auth = HTTPBasicAuth()
@@ -161,12 +161,12 @@ class BaseResource(UserAuthRequiredResource):
             db.session.rollback()
             return make_response(
                 jsonify({'error': str(e)}),
-                status.HTTP_500_INTERNAL_SERVER_ERROR
+                http.HTTPStatus.INTERNAL_SERVER_ERROR
             )
         else:
             return make_response(
                 self._schema.dump(entry),
-                status.HTTP_200_OK
+                http.HTTPStatus.OK
             )
 
     def delete(self, id):
@@ -177,12 +177,12 @@ class BaseResource(UserAuthRequiredResource):
             db.session.rollback()
             return make_response(
                 jsonify({'error': str(e)}),
-                status.HTTP_500_INTERNAL_SERVER_ERROR
+                http.HTTPStatus.INTERNAL_SERVER_ERROR
             )
         else:
             return make_response(
                 '',
-                status.HTTP_204_NO_CONTENT
+                http.HTTPStatus.NO_CONTENT
             )
 
 
@@ -220,12 +220,12 @@ class BaseListResource(UserAuthRequiredResource):
             db.session.rollback()
             return make_response(
                 jsonify({'error': str(e)}),
-                status.HTTP_500_INTERNAL_SERVER_ERROR
+                http.HTTPStatus.INTERNAL_SERVER_ERROR
             )
         else:
             return make_response(
                 self._schema.dump(new_entry),
-                status.HTTP_201_CREATED
+                http.HTTPStatus.CREATED
             )
 
 

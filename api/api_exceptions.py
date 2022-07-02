@@ -1,10 +1,11 @@
+import http
+
 from flask_apiexceptions import ApiException
 
-from . import status
 
 # ---------------------------------- Код 400 --------------------------------- #
 class BadRequestResourceError(ApiException):
-    status_code = status.HTTP_400_BAD_REQUEST
+    status_code = http.HTTPStatus.BAD_REQUEST
     code = 'bad-request'
     message = 'Bad request error'
 
@@ -21,7 +22,7 @@ class NotUniqueDataError(BadRequestResourceError):
 
 # ---------------------------------- Код 404 --------------------------------- #
 class NotFoundResourceError(ApiException):
-    status_code = status.HTTP_404_NOT_FOUND
+    status_code = http.HTTPStatus.NOT_FOUND
     code = 'not-found'
     message = 'Field with such id not found'
 
