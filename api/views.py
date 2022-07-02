@@ -316,19 +316,16 @@ class ChiefListResource(ChiefBaseConfig, BaseListResource):
     """."""
 
 
-# class UnitBaseConfig:
-#     _model = UnitModel
-#     _schema = unit_schema
-#     # None нужно делать, чтобы не путаться с уникальными полями
-#     _unique_key = None
+class UnitBaseConfig:
+    _schema = unit_schema
 
 
-# class UnitResource(UnitBaseConfig, BaseResource):
-#     """."""
+class UnitResource(UnitBaseConfig, BaseResource):
+    """."""
 
 
-# class UnitListResource(UnitBaseConfig, BaseListResource):
-#     """."""
+class UnitListResource(UnitBaseConfig, BaseListResource):
+    """."""
 
 
 # --------------------------------- Маршруты --------------------------------- #
@@ -346,7 +343,5 @@ api.add_resource(HallListResource, '/halls/')
 api.add_resource(HallResource, '/halls/<int:id>')
 api.add_resource(ChiefListResource, '/chiefs/')
 api.add_resource(ChiefResource, '/chiefs/<int:id>')
-# api.add_resource(UnitListResource, '/units/')
-# api.add_resource(UnitResource, '/units/<int:id>')
-
-from flask_migrate import migrate
+api.add_resource(UnitListResource, '/units/')
+api.add_resource(UnitResource, '/units/<int:id>')

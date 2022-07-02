@@ -7,7 +7,7 @@ from .models import (
     Hall,
     Material,
     Target,
-    # UnitModel,
+    Unit,
     User,
 )
 from .config import SQL_INIT_FILE

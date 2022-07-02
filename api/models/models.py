@@ -267,32 +267,35 @@ class Chief(db.Model, OperationMixin):
     Experience = db.Column(db.SmallInteger, nullable=False)
 
 
-# class UnitModel(BaseModel):
-#     """Модель имущества"""
-#     _table = 'units'
-#     _entity_name = 'Имущество'
-#     _primary_key = 'IDUnit'
-#     _fields = {
-#         'UnitName': RequiredField(),
-#         'DateStart': RequiredField(),
-#         'Cost': RequiredField(),
-#         'CostYear': RequiredField(),
-#         'CostAfter': RequiredField(),
-#         'Period': RequiredField(),
-#         'HallID': backref(HallModel),
-#         'ChiefID': backref(ChiefModel),
-#     }
-#     class ValidateSchema(mm.Schema):
-#         """Схема валидации модели."""
-#         UnitName = mm.fields.String(required=True)
-#         DateStart = mm.fields.Date(required=True)
-#         Cost = mm.fields.Float(required=True)
-#         CostYear = mm.fields.Integer(required=True, validate=mmv.Range(min=1600, max=dt.datetime.now().year))
-#         CostAfter = mm.fields.Float(required=True)
-#         Period = mm.fields.Integer(required=True, validate=mmv.Range(min=0))
+class Unit(db.Model, OperationMixin):
+    """Модель имущества"""
+    __tablename__ = 'units'
 
-#         class Meta:
-#             unknown = mm.EXCLUDE
+    IDUnit = db.Column(db.Integer, primary_key=True)
+    UnitName = db.Column(db.String(60), nullable=False)
+    DateStart = db.Column(db.Date, nullable=False)
+    Cost = db.Column(db.Numeric(precision=10, scale=2), nullable=False)
+    CostYear = db.Column(db.SmallInteger)
+    CostAfter = db.Column(db.Numeric(precision=10, scale=2))
+    Period = db.Column(db.SmallInteger, nullable=False)
+    HallID = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            'halls.IDHall',
+            ondelete='SET NULL',
+            onupdate='CASCADE',
+        )
+    )
+    Hall = db.relationship('Hall', uselist=False)
+    ChiefID = db.Column(
+        db.Integer,
+        db.ForeignKey(
+            'chiefs.IDChief',
+            ondelete='SET NULL',
+            onupdate='CASCADE',
+        )
+    )
+    Chief = db.relationship('Chief', uselist=False)
 
 
 if __name__ == '__main__':

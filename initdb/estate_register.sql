@@ -111,21 +111,21 @@ CREATE TABLE IF NOT EXISTS public.units
     "UnitName" VARCHAR(60) NOT NULL,
     "DateStart" DATE NOT NULL,
     "Cost" NUMERIC(10, 2) NOT NULL,
-    "CostYear" SMALLINT NOT NULL,
-    "CostAfter" NUMERIC(10, 2) NOT NULL,
-    "Period" VARCHAR(60) NOT NULL,
-    "HallID" INTEGER NOT NULL,
-    "ChiefID" INTEGER NOT NULL,
+    "CostYear" SMALLINT,
+    "CostAfter" NUMERIC(10, 2),
+    "Period" SMALLINT NOT NULL,
+    "HallID" INTEGER,
+    "ChiefID" INTEGER,
     CONSTRAINT units_pkey PRIMARY KEY ("IDUnit"),
     CONSTRAINT hall_fkey FOREIGN KEY ("HallID")
         REFERENCES public.halls ("IDHall") MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
         NOT VALID,
     CONSTRAINT chief_fkey FOREIGN KEY ("ChiefID")
         REFERENCES public.chiefs ("IDChief") MATCH SIMPLE
-        ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON UPDATE CASCADE
+        ON DELETE SET NULL
         NOT VALID
 );
 

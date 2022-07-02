@@ -10,6 +10,7 @@ from .models import (
     Hall,
     Material,
     Target,
+    Unit,
     User,
 )
 
@@ -211,6 +212,7 @@ class HallSchema(BaseSchema):
     )
     TargetID = auto_field(
         required=True,
+        allow_none=True,
         validate=validate.Range(min=1),
         data_key='target_id',
     )
@@ -222,6 +224,7 @@ class HallSchema(BaseSchema):
     )
     DepartmentID = auto_field(
         required=True,
+        allow_nonw=True,
         validate=validate.Range(min=1),
         data_key='department_id',
         # attribute='IDDepartment',
@@ -243,29 +246,11 @@ class HallSchema(BaseSchema):
         dump_only=True,
         data_key='building',
     )
-    # HallTitle = fields.Method(
-    #     'get_hall_title',
-    #     dump_only=True,
-    #     data_key='hall',
-    # )
 
     class Meta(BaseSchema.Meta):
         model = Hall
         include_fk = True
         include_relationships = True
-
-    # def get_hall_title(self, hall):
-    #     """."""
-    #     title = ''
-    #     if hall.HallNumber is not None:
-    #         title += f'{hall.HallNumber}'
-    #     if (target := hall.Target.Target) is not None:
-    #         title += '{}{}'.format(
-    #             f', ' if title else '',
-    #             target
-    #         )
-    #     return title if title else 'Не определено'
-
 
 
 class ChiefSchema(BaseSchema):
@@ -290,25 +275,26 @@ class ChiefSchema(BaseSchema):
         model = Chief
 
 
-class UnitSchema(Schema):
-    IDUnit = fields.Integer(dump_only=True, data_key='id')
-    UnitName = fields.String(
+class UnitSchema(BaseSchema):
+    IDUnit = auto_field(dump_only=True, data_key='id')
+    UnitName = auto_field(
         required=True,
-        validate=validate.Length(1),
+        validate=validate.Length(min=1, max=60),
         data_key='unit',
     )
-    DateStart = fields.Date(
+    DateStart = auto_field(
         required=True,
-        # validate=validate.Length(3),
+        validate=validate.Range(max=dt.date.today()),
         data_key='date_start',
     )
     Cost = fields.Float(
         required=True,
-        validate=validate.Range(min=0),
+        validate=validate.Range(min=0.0),
         data_key='cost'
     )
-    CostYear = fields.Integer(
+    CostYear = auto_field(
         required=True,
+        allow_none=True,
         validate=validate.Range(
             min=1600,
             max=dt.date.today().year,
@@ -317,37 +303,54 @@ class UnitSchema(Schema):
     )
     CostAfter = fields.Float(
         required=True,
-        validate=validate.Range(min=0),
+        allow_none=True,
+        validate=validate.Range(min=0.0),
         data_key='cost_after'
     )
-    Period = fields.Integer(
+    Period = auto_field(
         required=True,
         validate=validate.Range(min=0),
         data_key='period'
     )
-    ChiefID = fields.Integer(
+    ChiefID = auto_field(
         required=True,
+        allow_none=True,
         validate=validate.Range(min=1),
         data_key='chief_id',
     )
-    Chief = fields.String(
-        required=True,
+    Chief = fields.Pluck(
+        ChiefSchema,
+        'Chief',
         dump_only=True,
         data_key='chief',
     )
-    HallID = fields.Integer(
+    HallID = auto_field(
         required=True,
+        allow_none=True,
         validate=validate.Range(min=1),
         data_key='hall_id',
     )
-    HallName = fields.String(
-        required=True,
+    HallTitle = fields.Method(
+        'get_hall_title',
         dump_only=True,
         data_key='hall',
     )
 
-    class Meta:
-        ordered = True
+    def get_hall_title(self, unit):
+        """."""
+        hall = unit.Hall
+        title = ''
+        if hall.HallNumber is not None:
+            title += f'{hall.HallNumber}'
+        if (target := hall.Target.Target) is not None:
+            title += '{}{}'.format(
+                f', ' if title else '',
+                target
+            )
+        return title if title else 'Не определено'
+
+    class Meta(BaseSchema.Meta):
+        model = Unit
 
 
 user_schema = UserSchema()
