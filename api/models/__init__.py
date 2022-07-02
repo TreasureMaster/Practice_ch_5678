@@ -2,7 +2,7 @@
 from .models import (
     db,
     Building,
-    # ChiefModel,
+    Chief,
     Department,
     Hall,
     Material,

@@ -304,19 +304,16 @@ class HallListResource(HallBaseConfig, BaseListResource):
     """."""
 
 
-# class ChiefBaseConfig:
-#     _model = ChiefModel
-#     _schema = chief_schema
-#     # None нужно делать, чтобы не путаться с уникальными полями
-#     _unique_key = None
+class ChiefBaseConfig:
+    _schema = chief_schema
 
 
-# class ChiefResource(ChiefBaseConfig, BaseResource):
-#     """."""
+class ChiefResource(ChiefBaseConfig, BaseResource):
+    """."""
 
 
-# class ChiefListResource(ChiefBaseConfig, BaseListResource):
-#     """."""
+class ChiefListResource(ChiefBaseConfig, BaseListResource):
+    """."""
 
 
 # class UnitBaseConfig:
@@ -347,8 +344,8 @@ api.add_resource(BuildingListResource, '/buildings/')
 api.add_resource(BuildingResource, '/buildings/<int:id>')
 api.add_resource(HallListResource, '/halls/')
 api.add_resource(HallResource, '/halls/<int:id>')
-# api.add_resource(ChiefListResource, '/chiefs/')
-# api.add_resource(ChiefResource, '/chiefs/<int:id>')
+api.add_resource(ChiefListResource, '/chiefs/')
+api.add_resource(ChiefResource, '/chiefs/<int:id>')
 # api.add_resource(UnitListResource, '/units/')
 # api.add_resource(UnitResource, '/units/<int:id>')
 

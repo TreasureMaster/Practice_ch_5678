@@ -222,7 +222,6 @@ class Hall(db.Model, OperationMixin):
 
     IDHall = db.Column(db.Integer, primary_key=True)
     HallNumber = db.Column(db.SmallInteger)
-    # HallName = db.Column(db.String(60))
     HallSquare = db.Column(db.Numeric(precision=10, scale=2), nullable=False)
     Windows = db.Column(db.SmallInteger, nullable=False)
     Heaters = db.Column(db.SmallInteger, nullable=False)
@@ -257,56 +256,15 @@ class Hall(db.Model, OperationMixin):
     )
     Building = db.relationship('Building', uselist=False)
 
-    # _table = 'halls'
-    # _entity_name = 'Помещение'
-    # _primary_key = 'IDHall'
-    # _fields = {
-    #     'HallNumber': RequiredField(),
-    #     'HallSquare': RequiredField(),
-    #     'Windows': RequiredField(),
-    #     'Heaters': RequiredField(),
-    #     'TargetID': backref(TargetModel),
-    #     'DepartmentID': backref(DepartmentModel),
-    #     'KadastrID': backref(BuildingModel),
-    #     'HallName': ComposedProperty(
-    #         # из какой таблицы брать
-    #         _table,
-    #         {
-    #             # название свойства, с которым оно будет возвращаться из БД
-    #             'title': 'HallName',
-    #             # объединяемые поля в псоледовательности объединения
-    #             'fields': ('HallNumber', 'targets.Target', 'buildings.BuildingName'),# 'HouseNumber'),
-    #             # разделитель полей при объединении (по умолчанию - пробел)
-    #             'sep': ', ',
-    #         }
-    #     ),
-    # }
-    # class ValidateSchema(mm.Schema):
-    #     """Схема валидации модели."""
-    #     HallNumber = mm.fields.Integer(required=True, validate=mmv.Range(min=0))
-    #     HallSquare = mm.fields.Float(required=True)
-    #     Windows = mm.fields.Integer(required=True, validate=mmv.Range(min=0))
-    #     Heaters = mm.fields.Integer(required=True, validate=mmv.Range(min=0))
 
-    #     class Meta:
-    #         unknown = mm.EXCLUDE
+class Chief(db.Model, OperationMixin):
+    """Модель ответственного"""
+    __tablename__ = 'chiefs'
 
-
-# class ChiefModel(BaseModel):
-#     """Модель ответственного"""
-#     _table = 'chiefs'
-#     _entity_name = 'Ответственный'
-#     _primary_key = 'IDChief'
-#     _fields = {
-#         'Chief': RequiredField(),
-#         'AddressChief': RequiredField(),
-#         'Experience': RequiredField(),
-#     }
-#     class ValidateSchema(mm.Schema):
-#         """Схема валидации модели."""
-#         Chief = mm.fields.String(required=True)
-#         AddressChief = mm.fields.String(required=True)
-#         Experience = mm.fields.Integer(required=True, validate=mmv.Range(min=0))
+    IDChief = db.Column(db.Integer, primary_key=True)
+    Chief = db.Column(db.String(60), nullable=False)
+    AddressChief = db.Column(db.String(120), nullable=False)
+    Experience = db.Column(db.SmallInteger, nullable=False)
 
 
 # class UnitModel(BaseModel):

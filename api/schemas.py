@@ -5,6 +5,7 @@ from marshmallow_sqlalchemy import SQLAlchemySchema, auto_field
 from .models import (
     db,
     Building,
+    Chief,
     Department,
     Hall,
     Material,
@@ -193,12 +194,6 @@ class HallSchema(BaseSchema):
         validate=validate.Range(min=1),
         data_key='number',
     )
-    # HallName = auto_field(
-    #     required=True,
-    #     allow_none=True,
-    #     validate=validate.Length(min=1, max=60),
-    #     data_key='name',
-    # )
     HallSquare = fields.Float(
         required=True,
         validate=validate.Range(min=0.0),
@@ -273,26 +268,26 @@ class HallSchema(BaseSchema):
 
 
 
-class ChiefSchema(Schema):
-    IDChief = fields.Integer(dump_only=True, data_key='id')
-    Chief = fields.String(
+class ChiefSchema(BaseSchema):
+    IDChief = auto_field(dump_only=True, data_key='id')
+    Chief = auto_field(
         required=True,
-        validate=validate.Length(1),
+        validate=validate.Length(min=1, max=60),
         data_key='chief',
     )
-    AddressChief = fields.String(
+    AddressChief = auto_field(
         required=True,
-        validate=validate.Length(3),
+        validate=validate.Length(min=3, max=120),
         data_key='address_chief',
     )
-    Experience = fields.Integer(
+    Experience = auto_field(
         required=True,
         validate=validate.Range(min=0),
         data_key='experience'
     )
 
-    class Meta:
-        ordered = True
+    class Meta(BaseSchema.Meta):
+        model = Chief
 
 
 class UnitSchema(Schema):
